@@ -3,230 +3,54 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Управление ботом</title>
+  <title>Панель управления</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exifr/dist/full.umd.js"></script>
   <style>
     :root {
-      --bg: #F4F5F7;
-      --card-bg: #FFFFFF;
-      --border: #E2E5EA;
-      --text: #1E2024;
-      --text-muted: #727782;
-      --primary: #2B2D33;
-      --accent: #4A505E;
-      --danger: #D64545;
-      --success: #2E8B57;
-      --radius: 14px;
+      --bg: #f4f5f7;
+      --card: #ffffff;
+      --text: #1c1c1e;
+      --muted: #8e8e93;
+      --accent: #2c2c2e;
+      --border: #e5e5ea;
+      --danger: #d9383a;
     }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      -webkit-tap-highlight-color: transparent;
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 18px 16px 96px; }
+    header { margin-bottom: 16px; }
+    header h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.3px; }
+    .tabs { display: grid; grid-template-columns: repeat(4, 1fr); background: #e8e9ed; padding: 4px; border-radius: 12px; margin-bottom: 16px; gap: 4px; }
+    .tab { border: none; background: transparent; padding: 8px 4px; font-size: 12px; font-weight: 600; color: #636366; border-radius: 9px; cursor: pointer; transition: 0.2s; }
+    .tab.active { background: var(--card); color: var(--text); box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+    .section { display: none; }
+    .section.active { display: block; }
+    .card { background: var(--card); border-radius: 16px; padding: 6px 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); margin-bottom: 14px; }
+    .block-card { padding: 16px; }
+    .row { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border); }
+    .row:last-child { border-bottom: none; }
+    .row-info h3 { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+    .row-info p { font-size: 12px; color: var(--muted); }
+    .switch { position: relative; width: 48px; height: 28px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; inset: 0; background: #d1d1d6; transition: .25s; border-radius: 28px; }
+    .slider:before { position: absolute; content: ""; height: 24px; width: 24px; left: 2px; bottom: 2px; background: white; transition: .25s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    input:checked + .slider { background: var(--accent); }
+    input:checked + .slider:before { transform: translateX(20px); }
+    .field { margin-bottom: 12px; }
+    .field:last-child { margin-bottom: 0; }
+    .field label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+    .field input[type="text"], .field input[type="password"] {
+      width: 100%; padding: 11px 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; background: #f9f9fb; outline: none;
     }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      padding: 16px;
-      padding-bottom: 90px;
-    }
-
-    header {
-      margin-bottom: 20px;
-    }
-
-    h1 {
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--primary);
-      letter-spacing: -0.3px;
-    }
-
-    p.subtitle {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-
-    .tabs {
-      display: flex;
-      background: #E8EAEF;
-      padding: 4px;
-      border-radius: 12px;
-      margin-bottom: 16px;
-      gap: 4px;
-    }
-
-    .tab-btn {
-      flex: 1;
-      border: none;
-      background: transparent;
-      padding: 8px 0;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-muted);
-      border-radius: 9px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .tab-btn.active {
-      background: var(--card-bg);
-      color: var(--primary);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    }
-
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 14px 16px;
-      margin-bottom: 12px;
-    }
-
-    .row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .row + .row {
-      margin-top: 14px;
-      padding-top: 14px;
-      border-top: 1px solid #F0F2F5;
-    }
-
-    .label-block h3 {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--primary);
-    }
-
-    .label-block p {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-
-    .switch {
-      position: relative;
-      width: 46px;
-      height: 26px;
-      flex-shrink: 0;
-    }
-
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #D3D6DC;
-      transition: .25s;
-      border-radius: 26px;
-    }
-
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 20px;
-      width: 20px;
-      left: 3px;
-      bottom: 3px;
-      background-color: white;
-      transition: .25s;
-      border-radius: 50%;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-    }
-
-    input:checked + .slider {
-      background-color: var(--primary);
-    }
-
-    input:checked + .slider:before {
-      transform: translateX(20px);
-    }
-
-    .input-group {
-      margin-bottom: 12px;
-    }
-
-    .input-group label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--primary);
-      margin-bottom: 6px;
-    }
-
-    .input-group input {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 12px;
-      font-size: 14px;
-      color: var(--text);
-      outline: none;
-      transition: border 0.2s;
-    }
-
-    .input-group input:focus {
-      border-color: var(--primary);
-    }
-
-    .btn-action {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      color: var(--primary);
-      padding: 10px;
-      font-size: 13px;
-      font-weight: 600;
-      border-radius: 10px;
-      cursor: pointer;
-      margin-top: 6px;
-    }
-
-    .save-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(244, 245, 247, 0.95);
-      backdrop-filter: blur(10px);
-      padding: 12px 16px;
-      border-top: 1px solid var(--border);
-    }
-
-    .btn-save {
-      width: 100%;
-      background: var(--primary);
-      color: #FFFFFF;
-      border: none;
-      border-radius: 12px;
-      padding: 14px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(43, 45, 51, 0.2);
-    }
+    .btn { width: 100%; padding: 12px; border: none; border-radius: 11px; font-size: 14px; font-weight: 600; cursor: pointer; background: var(--accent); color: #fff; margin-top: 8px; }
+    .btn-outline { background: #ebebf0; color: var(--text); }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .result-box { margin-top: 12px; padding: 12px; border-radius: 10px; background: #f4f5f7; font-size: 12.5px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; display: none; }
+    .file-drop { border: 1.5px dashed #c7c7cc; border-radius: 12px; padding: 18px 12px; text-align: center; cursor: pointer; background: #fafafa; display: block; }
+    .file-drop input { display: none; }
+    .save-bar { position: fixed; bottom: 16px; left: 16px; right: 16px; }
+    .save-btn { width: 100%; padding: 15px; border: none; border-radius: 14px; background: var(--accent); color: #fff; font-size: 16px; font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,0.15); cursor: pointer; }
   </style>
 </head>
 <body>
@@ -236,209 +60,299 @@
   </header>
 
   <div class="tabs">
-    <button class="tab-btn active" onclick="openTab('tab-interception')">Перехват</button>
-    <button class="tab-btn" onclick="openTab('tab-special')">Спецрежимы</button>
-    <button class="tab-btn" onclick="openTab('tab-channels')">Каналы</button>
+    <button class="tab active" onclick="openTab('intercept', this)">Перехват</button>
+    <button class="tab" onclick="openTab('special', this)">Режимы</button>
+    <button class="tab" onclick="openTab('channels', this)">Каналы</button>
+    <button class="tab" onclick="openTab('osint', this)">OSINT</button>
   </div>
 
-  <div id="tab-interception" class="tab-content active">
+  <div id="intercept" class="section active">
     <div class="card">
       <div class="row">
-        <div class="label-block">
-          <h3>Пауза бота</h3>
-          <p>Временно отключить обработку</p>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="paused">
-          <span class="slider"></span>
-        </label>
+        <div class="row-info"><h3>Пауза бота</h3><p>Временно отключить обработку</p></div>
+        <label class="switch"><input type="checkbox" id="paused"><span class="slider"></span></label>
       </div>
       <div class="row">
-        <div class="label-block">
-          <h3>Удаленные сообщения</h3>
-          <p>Фиксировать стертый текст</p>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="save_deleted" checked>
-          <span class="slider"></span>
-        </label>
+        <div class="row-info"><h3>Удаленные сообщения</h3><p>Фиксировать стертый текст и снос чата</p></div>
+        <label class="switch"><input type="checkbox" id="save_deleted" checked><span class="slider"></span></label>
       </div>
       <div class="row">
-        <div class="label-block">
-          <h3>Измененные сообщения</h3>
-          <p>Сохранять историю правок</p>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="save_edited" checked>
-          <span class="slider"></span>
-        </label>
+        <div class="row-info"><h3>Измененные сообщения</h3><p>Сохранять историю правок</p></div>
+        <label class="switch"><input type="checkbox" id="save_edited" checked><span class="slider"></span></label>
       </div>
       <div class="row">
-        <div class="label-block">
-          <h3>Голосовые и кружки</h3>
-          <p>Перехватывать аудио и видеосообщения</p>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="save_voice_circles" checked>
-          <span class="slider"></span>
-        </label>
+        <div class="row-info"><h3>Голосовые и кружки</h3><p>Перехватывать аудио и видеосообщения</p></div>
+        <label class="switch"><input type="checkbox" id="save_voice_circles" checked><span class="slider"></span></label>
       </div>
       <div class="row">
-        <div class="label-block">
-          <h3>Фото и видео</h3>
-          <p>Автосохранение медиафайлов</p>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="save_photo_video" checked>
-          <span class="slider"></span>
-        </label>
+        <div class="row-info"><h3>Фото и видео</h3><p>Автосохранение медиафайлов</p></div>
+        <label class="switch"><input type="checkbox" id="save_photo_video" checked><span class="slider"></span></label>
       </div>
       <div class="row">
-        <div class="label-block">
-          <h3>Одноразовые медиа</h3>
-          <p>Захват самоуничтожающихся фото</p>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="save_protected" checked>
-          <span class="slider"></span>
-        </label>
+        <div class="row-info"><h3>Одноразовые медиа</h3><p>Захват самоуничтожающихся файлов</p></div>
+        <label class="switch"><input type="checkbox" id="save_protected" checked><span class="slider"></span></label>
       </div>
     </div>
   </div>
 
-  <div id="tab-special" class="tab-content">
-    <div class="card">
-      <div class="input-group">
-        <label>Секретный код защиты (Stealth):</label>
-        <input type="password" id="stealth-code-input" placeholder="Введи код">
+  <div id="special" class="section">
+    <div class="card block-card">
+      <div class="field">
+        <label>Секретный код защиты (Stealth Mode)</label>
+        <input type="password" id="stealth_code" placeholder="Введи код для разблокировки">
       </div>
-      <button class="btn-action" onclick="checkStealthCode()">Разблокировать защиту</button>
-      
-      <div class="row" style="margin-top: 14px;">
-        <div class="label-block">
-          <h3>Защита моих сообщений</h3>
-          <p>Скрывать свои действия от перехвата</p>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="stealth_mode" disabled>
-          <span class="slider"></span>
-        </label>
+      <div class="row">
+        <div class="row-info"><h3>Защита моих сообщений</h3><p>Запретить перехват моих сообщений</p></div>
+        <label class="switch"><input type="checkbox" id="stealth_mode"><span class="slider"></span></label>
       </div>
-    </div>
-
-    <div class="card">
-      <div class="input-group">
-        <label>Секретный ключ ИИ-автоответчика:</label>
-        <input type="password" id="ai-code-input" placeholder="Введи ключ">
+      <div class="field" style="margin-top:12px;">
+        <label>Ключ ИИ-автоответчика</label>
+        <input type="password" id="ai_code" placeholder="Введи ключ для активации ИИ">
       </div>
-      <button class="btn-action" onclick="checkAiCode()">Разблокировать ИИ</button>
-      
-      <div class="row" style="margin-top: 14px;">
-        <div class="label-block">
-          <h3>ИИ-автоответчик</h3>
-          <p>Автоответы от твоего лица через нейросеть</p>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="ai_mode" disabled>
-          <span class="slider"></span>
-        </label>
+      <div class="row">
+        <div class="row-info"><h3>ИИ-автоответчик</h3><p>Отвечать в ЛС от твоего лица</p></div>
+        <label class="switch"><input type="checkbox" id="ai_mode"><span class="slider"></span></label>
       </div>
+      <button class="btn btn-danger" onclick="clearBotCache()">Очистить кэш сообщений (48ч)</button>
     </div>
   </div>
 
-  <div id="tab-channels" class="tab-content">
-    <div class="card">
-      <div class="input-group">
-        <label>Канал для текста (ID):</label>
-        <input type="text" id="chan_text" placeholder="-1001234567890">
-      </div>
-      <div class="input-group">
-        <label>Канал для фото (ID):</label>
-        <input type="text" id="chan_photo" placeholder="-1001234567890">
-      </div>
-      <div class="input-group">
-        <label>Канал для видео (ID):</label>
-        <input type="text" id="chan_video" placeholder="-1001234567890">
-      </div>
-      <div class="input-group">
-        <label>Канал для голосовых (ID):</label>
-        <input type="text" id="chan_voice" placeholder="-1001234567890">
-      </div>
-      <div class="input-group">
-        <label>Канал для кружков (ID):</label>
-        <input type="text" id="chan_video_note" placeholder="-1001234567890">
-      </div>
+  <div id="channels" class="section">
+    <div class="card block-card">
+      <div class="field"><label>Текст (ID канала или пусто для ЛС)</label><input type="text" id="ch_text" placeholder="-1001234567890"></div>
+      <div class="field"><label>Фото</label><input type="text" id="ch_photo" placeholder="-1001234567890"></div>
+      <div class="field"><label>Видео</label><input type="text" id="ch_video" placeholder="-1001234567890"></div>
+      <div class="field"><label>Голосовые</label><input type="text" id="ch_voice" placeholder="-1001234567890"></div>
+      <div class="field"><label>Кружки</label><input type="text" id="ch_video_note" placeholder="-1001234567890"></div>
     </div>
   </div>
 
-  <div class="save-bar">
-    <button class="btn-save" onclick="saveConfiguration()">Сохранить настройки</button>
+  <div id="osint" class="section">
+    <div class="card block-card">
+      <div class="row-info" style="margin-bottom:10px;">
+        <h3>Анти-фишинг и пробив ссылок</h3>
+        <p>Проверка домена, IP, хостинга и редиректов</p>
+      </div>
+      <div class="field">
+        <input type="text" id="scan_url_input" placeholder="https://example.com или домен">
+      </div>
+      <button class="btn btn-outline" onclick="quickScanUrl()">Быстрый скан прямо здесь</button>
+      <button class="btn" onclick="deepScanViaBot()">Глубокий пробив через бота (в чат)</button>
+      <div id="url_result" class="result-box"></div>
+    </div>
+
+    <div class="card block-card">
+      <div class="row-info" style="margin-bottom:10px;">
+        <h3>EXIF-потрошитель фото</h3>
+        <p>Извлечение модели телефона, даты и GPS-координат без нагрузки на сервер</p>
+      </div>
+      <label class="file-drop">
+        <span id="file_label">Выбрать оригинал фото (файл)</span>
+        <input type="file" id="exif_file" accept="image/*,.heic,.tiff" onchange="parseExif(this)">
+      </label>
+      <div id="exif_result" class="result-box"></div>
+      <button id="send_exif_btn" class="btn btn-outline" style="display:none;" onclick="sendExifToBot()">Отправить этот отчет в чат</button>
+    </div>
+
+    <div class="card block-card">
+      <div class="row-info" style="margin-bottom:10px;">
+        <h3>Пробив профиля Telegram</h3>
+        <p>Поиск по цифровому ID, @username или выгрузка базы</p>
+      </div>
+      <div class="field">
+        <input type="text" id="lookup_input" placeholder="ID (напр. 123456789) или пусто для всего списка">
+      </div>
+      <button class="btn" onclick="lookupUser()">Пробить профиль в чат</button>
+    </div>
+  </div>
+
+  <div class="save-bar" id="save_bar">
+    <button class="save-btn" onclick="saveSettings()">Сохранить настройки</button>
   </div>
 
   <script>
-    const tg = window.Telegram?.WebApp;
-    if (tg) {
-      tg.ready();
-      tg.expand();
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    const stateKey = "pashka_bot_panel_v2";
+    let lastExifReport = "";
+
+    function loadSavedState() {
+      try {
+        const raw = localStorage.getItem(stateKey);
+        if (!raw) return;
+        const s = JSON.parse(raw);
+        ["paused", "save_deleted", "save_edited", "save_voice_circles", "save_photo_video", "save_protected", "stealth_mode", "ai_mode"].forEach(k => {
+          if (typeof s[k] === "boolean" && document.getElementById(k)) {
+            document.getElementById(k).checked = s[k];
+          }
+        });
+        if (s.channels) {
+          ["text", "photo", "video", "voice", "video_note"].forEach(m => {
+            if (s.channels[m] && document.getElementById("ch_" + m)) {
+              document.getElementById("ch_" + m).value = s.channels[m];
+            }
+          });
+        }
+      } catch (e) {}
+    }
+    loadSavedState();
+
+    function openTab(id, btn) {
+      document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+      btn.classList.add("active");
+      document.getElementById("save_bar").style.display = (id === "osint") ? "none" : "block";
     }
 
-    function openTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
-      event.target.classList.add('active');
-    }
+    function saveSettings() {
+      const stealthCode = document.getElementById("stealth_code").value.trim();
+      const aiCode = document.getElementById("ai_code").value.trim();
+      const stealthChecked = document.getElementById("stealth_mode").checked;
+      const aiChecked = document.getElementById("ai_mode").checked;
 
-    function checkStealthCode() {
-      const code = document.getElementById('stealth-code-input').value.trim();
-      const sw = document.getElementById('stealth_mode');
-      if (code === "killme3197") {
-        sw.disabled = false;
-        sw.checked = true;
-        alert("Код принят. Защита разблокирована.");
-      } else {
-        alert("Неверный код.");
+      if (stealthChecked && stealthCode && stealthCode !== "killme3197") {
+        alert("Неверный секретный код защиты!");
+        return;
       }
-    }
-
-    function checkAiCode() {
-      const code = document.getElementById('ai-code-input').value.trim();
-      const sw = document.getElementById('ai_mode');
-      if (code === "aime9713") {
-        sw.disabled = false;
-        sw.checked = true;
-        alert("Ключ принят. ИИ-автоответчик разблокирован.");
-      } else {
-        alert("Неверный ключ.");
+      if (aiChecked && aiCode && aiCode !== "aime9713") {
+        alert("Неверный ключ ИИ-автоответчика!");
+        return;
       }
-    }
 
-    function saveConfiguration() {
       const payload = {
-        paused: document.getElementById('paused').checked,
-        save_deleted: document.getElementById('save_deleted').checked,
-        save_edited: document.getElementById('save_edited').checked,
-        save_voice_circles: document.getElementById('save_voice_circles').checked,
-        save_photo_video: document.getElementById('save_photo_video').checked,
-        save_protected: document.getElementById('save_protected').checked,
-        stealth_mode: document.getElementById('stealth_mode').checked,
-        ai_mode: document.getElementById('ai_mode').checked,
+        action: "save_settings",
+        paused: document.getElementById("paused").checked,
+        save_deleted: document.getElementById("save_deleted").checked,
+        save_edited: document.getElementById("save_edited").checked,
+        save_voice_circles: document.getElementById("save_voice_circles").checked,
+        save_photo_video: document.getElementById("save_photo_video").checked,
+        save_protected: document.getElementById("save_protected").checked,
+        stealth_mode: stealthChecked,
+        ai_mode: aiChecked,
         channels: {
-          text: document.getElementById('chan_text').value.trim() || null,
-          photo: document.getElementById('chan_photo').value.trim() || null,
-          video: document.getElementById('chan_video').value.trim() || null,
-          voice: document.getElementById('chan_voice').value.trim() || null,
-          video_note: document.getElementById('chan_video_note').value.trim() || null
+          text: document.getElementById("ch_text").value.trim() || null,
+          photo: document.getElementById("ch_photo").value.trim() || null,
+          video: document.getElementById("ch_video").value.trim() || null,
+          voice: document.getElementById("ch_voice").value.trim() || null,
+          video_note: document.getElementById("ch_video_note").value.trim() || null
         }
       };
 
-      if (tg && tg.sendData) {
-        tg.sendData(JSON.stringify(payload));
-      } else {
-        alert("Настройки сохранены (тестовый режим вне Telegram): " + JSON.stringify(payload));
+      localStorage.setItem(stateKey, JSON.stringify(payload));
+      tg.sendData(JSON.stringify(payload));
+    }
+
+    function clearBotCache() {
+      tg.sendData(JSON.stringify({ action: "clear_cache" }));
+    }
+
+    async function quickScanUrl() {
+      let raw = document.getElementById("scan_url_input").value.trim();
+      const box = document.getElementById("url_result");
+      if (!raw) return;
+      box.style.display = "block";
+      box.textContent = "Сканирую домен и сетевые узлы...";
+
+      try {
+        if (!raw.startsWith("http://") && !raw.startsWith("https://")) raw = "https://" + raw;
+        const u = new URL(raw);
+        const host = u.hostname;
+        let risk = 0;
+        let notes = [];
+
+        if (host.includes("xn--")) { risk += 45; notes.push("⚠️ Punycode (подмена символов в домене)"); }
+        if (u.protocol === "http:") { risk += 20; notes.push("⚠️ Нет SSL-шифрования (HTTP)"); }
+        if (/\.(xyz|top|buzz|tk|ml|cf|gq|click|loan)$/i.test(host)) { risk += 25; notes.push("⚠️ Дешевая доменная зона (риск фишинга)"); }
+        if (/(login|verify|gift|auth|steam|claim|wallet|bonus)/i.test(raw)) { risk += 20; notes.push("⚠️ Подозрительные ключевые слова в ссылке"); }
+
+        const dnsResp = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(host)}&type=A`);
+        const dnsData = await dnsResp.json();
+        const ip = (dnsData.Answer && dnsData.Answer.length) ? dnsData.Answer[dnsData.Answer.length - 1].data : null;
+
+        let geoInfo = "Не определено";
+        if (ip) {
+          const geoResp = await fetch(`https://ipwho.is/${ip}`);
+          const geo = await geoResp.json();
+          if (geo && geo.success !== false) {
+            geoInfo = `${geo.country || ""} (${geo.city || ""}) — ${geo.connection ? geo.connection.isp : ""}`;
+          }
+        } else {
+          risk += 35;
+          notes.push("⚠️ Домен не имеет A-записи (возможно, мертв или заблокирован)");
+        }
+
+        const status = risk < 25 ? "🟢 Безопасно" : (risk < 60 ? "🟡 Подозрительно" : "🔴 Высокий риск фишинга!");
+        box.textContent =
+          `Статус: ${status} (Риск: ${Math.min(risk, 100)}%)\n` +
+          `Домен: ${host}\n` +
+          `IP: ${ip || "Не найден"}\n` +
+          `Сервер: ${geoInfo}\n` +
+          (notes.length ? `\nНаходки:\n${notes.join("\n")}` : "\nЯвных маркеров фишинга не найдено.");
+      } catch (e) {
+        box.textContent = "Ошибка разбора ссылки. Проверь правильность адреса.";
       }
+    }
+
+    function deepScanViaBot() {
+      const url = document.getElementById("scan_url_input").value.trim();
+      if (!url) return;
+      tg.sendData(JSON.stringify({ action: "scan_url", url: url }));
+    }
+
+    async function parseExif(input) {
+      const file = input.files[0];
+      const box = document.getElementById("exif_result");
+      const btn = document.getElementById("send_exif_btn");
+      if (!file) return;
+
+      document.getElementById("file_label").textContent = "📄 " + file.name;
+      box.style.display = "block";
+      box.textContent = "Читаю метаданные файла...";
+
+      try {
+        const data = await exifr.parse(file, true);
+        const lines = [
+          `📁 Файл: ${file.name} (${(file.size / 1024).toFixed(1)} КБ)`
+        ];
+
+        if (!data) {
+          lines.push("⚠️ EXIF-метаданные стерты (возможно, фото было переслано со сжатием Telegram).");
+        } else {
+          if (data.Make || data.Model) lines.push(`📱 Устройство: ${data.Make || ""} ${data.Model || ""}`);
+          if (data.Software) lines.push(`⚙️ ПО / Система: ${data.Software}`);
+          if (data.DateTimeOriginal) lines.push(`🕒 Дата съемки: ${new Date(data.DateTimeOriginal).toLocaleString("ru-RU")}`);
+          if (data.ExifImageWidth && data.ExifImageHeight) lines.push(`📐 Разрешение: ${data.ExifImageWidth}x${data.ExifImageHeight}`);
+          if (data.LensModel) lines.push(`🔍 Объектив: ${data.LensModel}`);
+
+          if (data.latitude && data.longitude) {
+            const lat = data.latitude.toFixed(6);
+            const lon = data.longitude.toFixed(6);
+            lines.push(`📍 Координаты: ${lat}, ${lon}`);
+            lines.push(`🗺 Карта: https://maps.google.com/?q=${lat},${lon}`);
+          } else {
+            lines.push("📍 Геолокация (GPS): отсутствует в файле");
+          }
+        }
+
+        lastExifReport = "Отчет EXIF-анализатора:\n" + lines.join("\n");
+        box.textContent = lines.join("\n");
+        btn.style.display = "block";
+      } catch (e) {
+        box.textContent = "Не удалось прочитать EXIF из этого файла.";
+      }
+    }
+
+    function sendExifToBot() {
+      if (!lastExifReport) return;
+      tg.sendData(JSON.stringify({ action: "exif_report", report: lastExifReport }));
+    }
+
+    function lookupUser() {
+      const q = document.getElementById("lookup_input").value.trim();
+      tg.sendData(JSON.stringify({ action: "lookup_id", query: q }));
     }
   </script>
 </body>
 </html>
-
