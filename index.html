@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Панель управления</title>
+  <title>Настройки</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/exifr/dist/full.umd.js"></script>
   <style>
@@ -19,7 +19,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background: var(--bg); color: var(--text); padding: 18px 16px 96px; }
     header { margin-bottom: 16px; }
-    header h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.3px; }
+    header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
     .tabs { display: grid; grid-template-columns: repeat(4, 1fr); background: #e8e9ed; padding: 4px; border-radius: 12px; margin-bottom: 16px; gap: 4px; }
     .tab { border: none; background: transparent; padding: 8px 4px; font-size: 12px; font-weight: 600; color: #636366; border-radius: 9px; cursor: pointer; transition: 0.2s; }
     .tab.active { background: var(--card); color: var(--text); box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
@@ -47,49 +47,49 @@
     .btn-outline { background: #ebebf0; color: var(--text); }
     .btn-danger { background: var(--danger); color: #fff; }
     .result-box { margin-top: 12px; padding: 12px; border-radius: 10px; background: #f4f5f7; font-size: 12.5px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; display: none; }
-    .file-drop { border: 1.5px dashed #c7c7cc; border-radius: 12px; padding: 18px 12px; text-align: center; cursor: pointer; background: #fafafa; display: block; }
+    .file-drop { border: 1.5px dashed #c7c7cc; border-radius: 12px; padding: 18px 12px; text-align: center; cursor: pointer; background: #fafafa; display: block; font-size: 13px; color: var(--text); }
     .file-drop input { display: none; }
     .save-bar { position: fixed; bottom: 16px; left: 16px; right: 16px; }
-    .save-btn { width: 100%; padding: 15px; border: none; border-radius: 14px; background: var(--accent); color: #fff; font-size: 16px; font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,0.15); cursor: pointer; }
+    .save-btn { width: 100%; padding: 15px; border: none; border-radius: 14px; background: var(--accent); color: #fff; font-size: 15px; font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,0.15); cursor: pointer; }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>Панель управления</h1>
+    <h1>Настройки</h1>
   </header>
 
   <div class="tabs">
     <button class="tab active" onclick="openTab('intercept', this)">Перехват</button>
     <button class="tab" onclick="openTab('special', this)">Режимы</button>
     <button class="tab" onclick="openTab('channels', this)">Каналы</button>
-    <button class="tab" onclick="openTab('osint', this)">OSINT</button>
+    <button class="tab" onclick="openTab('osint', this)">Утилиты</button>
   </div>
 
   <div id="intercept" class="section active">
     <div class="card">
       <div class="row">
-        <div class="row-info"><h3>Пауза бота</h3><p>Временно отключить обработку</p></div>
+        <div class="row-info"><h3>Пауза</h3><p>Отключить перехват</p></div>
         <label class="switch"><input type="checkbox" id="paused"><span class="slider"></span></label>
       </div>
       <div class="row">
-        <div class="row-info"><h3>Удаленные сообщения</h3><p>Фиксировать стертый текст и снос чата</p></div>
+        <div class="row-info"><h3>Удаленные</h3><p>Присылать стертые сообщения</p></div>
         <label class="switch"><input type="checkbox" id="save_deleted" checked><span class="slider"></span></label>
       </div>
       <div class="row">
-        <div class="row-info"><h3>Измененные сообщения</h3><p>Сохранять историю правок</p></div>
+        <div class="row-info"><h3>Измененные</h3><p>Показывать старый и новый текст</p></div>
         <label class="switch"><input type="checkbox" id="save_edited" checked><span class="slider"></span></label>
       </div>
       <div class="row">
-        <div class="row-info"><h3>Голосовые и кружки</h3><p>Перехватывать аудио и видеосообщения</p></div>
+        <div class="row-info"><h3>Голосовые и кружки</h3><p>Сохранять аудио и видеосообщения</p></div>
         <label class="switch"><input type="checkbox" id="save_voice_circles" checked><span class="slider"></span></label>
       </div>
       <div class="row">
-        <div class="row-info"><h3>Фото и видео</h3><p>Автосохранение медиафайлов</p></div>
+        <div class="row-info"><h3>Фото и видео</h3><p>Сохранять обычные медиафайлы</p></div>
         <label class="switch"><input type="checkbox" id="save_photo_video" checked><span class="slider"></span></label>
       </div>
       <div class="row">
-        <div class="row-info"><h3>Одноразовые медиа</h3><p>Захват самоуничтожающихся файлов</p></div>
+        <div class="row-info"><h3>Сгорающие медиа</h3><p>Сохранять фото и видео с таймером по реплаю</p></div>
         <label class="switch"><input type="checkbox" id="save_protected" checked><span class="slider"></span></label>
       </div>
     </div>
@@ -98,22 +98,22 @@
   <div id="special" class="section">
     <div class="card block-card">
       <div class="field">
-        <label>Секретный код защиты (Stealth Mode)</label>
-        <input type="password" id="stealth_code" placeholder="Введи код для разблокировки">
+        <label>Код защиты</label>
+        <input type="password" id="stealth_code" placeholder="Пароль для переключения">
       </div>
       <div class="row">
-        <div class="row-info"><h3>Защита моих сообщений</h3><p>Запретить перехват моих сообщений</p></div>
+        <div class="row-info"><h3>Не логировать меня</h3><p>Игнорировать мои сообщения у других</p></div>
         <label class="switch"><input type="checkbox" id="stealth_mode"><span class="slider"></span></label>
       </div>
       <div class="field" style="margin-top:12px;">
-        <label>Ключ ИИ-автоответчика</label>
-        <input type="password" id="ai_code" placeholder="Введи ключ для активации ИИ">
+        <label>Код автоответчика</label>
+        <input type="password" id="ai_code" placeholder="Пароль для переключения">
       </div>
       <div class="row">
-        <div class="row-info"><h3>ИИ-автоответчик</h3><p>Отвечать в ЛС от твоего лица</p></div>
+        <div class="row-info"><h3>Автоответчик</h3><p>Отвечать в ЛС через ИИ</p></div>
         <label class="switch"><input type="checkbox" id="ai_mode"><span class="slider"></span></label>
       </div>
-      <button class="btn btn-danger" onclick="clearBotCache()">Очистить кэш сообщений (48ч)</button>
+      <button class="btn btn-danger" onclick="clearBotCache()">Сбросить кэш</button>
     </div>
   </div>
 
@@ -130,51 +130,40 @@
   <div id="osint" class="section">
     <div class="card block-card">
       <div class="row-info" style="margin-bottom:10px;">
-        <h3>Анти-фишинг и пробив ссылок</h3>
-        <p>Проверка домена, IP, хостинга и редиректов</p>
+        <h3>Проверка ссылок</h3>
+        <p>Домен, IP, хостинг и редиректы</p>
       </div>
       <div class="field">
-        <input type="text" id="scan_url_input" placeholder="https://example.com или домен">
+        <input type="text" id="scan_url_input" placeholder="https://example.com">
       </div>
-      <button class="btn btn-outline" onclick="quickScanUrl()">Быстрый скан прямо здесь</button>
-      <button class="btn" onclick="deepScanViaBot()">Глубокий пробив через бота (в чат)</button>
+      <button class="btn btn-outline" onclick="quickScanUrl()">Проверить здесь</button>
+      <button class="btn" onclick="deepScanViaBot()">Полная проверка в чат</button>
       <div id="url_result" class="result-box"></div>
     </div>
 
     <div class="card block-card">
       <div class="row-info" style="margin-bottom:10px;">
-        <h3>EXIF-потрошитель фото</h3>
-        <p>Извлечение модели телефона, даты и GPS-координат без нагрузки на сервер</p>
+        <h3>Метаданные фото (EXIF)</h3>
+        <p>Устройство, дата съемки и координаты из исходника</p>
       </div>
       <label class="file-drop">
-        <span id="file_label">Выбрать оригинал фото (файл)</span>
+        <span id="file_label">Выбрать файл изображения</span>
         <input type="file" id="exif_file" accept="image/*,.heic,.tiff" onchange="parseExif(this)">
       </label>
       <div id="exif_result" class="result-box"></div>
-      <button id="send_exif_btn" class="btn btn-outline" style="display:none;" onclick="sendExifToBot()">Отправить этот отчет в чат</button>
-    </div>
-
-    <div class="card block-card">
-      <div class="row-info" style="margin-bottom:10px;">
-        <h3>Пробив профиля Telegram</h3>
-        <p>Поиск по цифровому ID, @username или выгрузка базы</p>
-      </div>
-      <div class="field">
-        <input type="text" id="lookup_input" placeholder="ID (напр. 123456789) или пусто для всего списка">
-      </div>
-      <button class="btn" onclick="lookupUser()">Пробить профиль в чат</button>
+      <button id="send_exif_btn" class="btn btn-outline" style="display:none;" onclick="sendExifToBot()">Отправить в чат</button>
     </div>
   </div>
 
   <div class="save-bar" id="save_bar">
-    <button class="save-btn" onclick="saveSettings()">Сохранить настройки</button>
+    <button class="save-btn" onclick="saveSettings()">Сохранить</button>
   </div>
 
   <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    const stateKey = "pashka_bot_panel_v2";
+    const stateKey = "pashka_bot_panel_v3";
     let lastExifReport = "";
 
     function loadSavedState() {
@@ -213,11 +202,11 @@
       const aiChecked = document.getElementById("ai_mode").checked;
 
       if (stealthChecked && stealthCode && stealthCode !== "killme3197") {
-        alert("Неверный секретный код защиты!");
+        alert("Неверный код защиты");
         return;
       }
       if (aiChecked && aiCode && aiCode !== "aime9713") {
-        alert("Неверный ключ ИИ-автоответчика!");
+        alert("Неверный код автоответчика");
         return;
       }
 
@@ -253,7 +242,7 @@
       const box = document.getElementById("url_result");
       if (!raw) return;
       box.style.display = "block";
-      box.textContent = "Сканирую домен и сетевые узлы...";
+      box.textContent = "Проверка...";
 
       try {
         if (!raw.startsWith("http://") && !raw.startsWith("https://")) raw = "https://" + raw;
@@ -262,10 +251,10 @@
         let risk = 0;
         let notes = [];
 
-        if (host.includes("xn--")) { risk += 45; notes.push("⚠️ Punycode (подмена символов в домене)"); }
-        if (u.protocol === "http:") { risk += 20; notes.push("⚠️ Нет SSL-шифрования (HTTP)"); }
-        if (/\.(xyz|top|buzz|tk|ml|cf|gq|click|loan)$/i.test(host)) { risk += 25; notes.push("⚠️ Дешевая доменная зона (риск фишинга)"); }
-        if (/(login|verify|gift|auth|steam|claim|wallet|bonus)/i.test(raw)) { risk += 20; notes.push("⚠️ Подозрительные ключевые слова в ссылке"); }
+        if (host.includes("xn--")) { risk += 45; notes.push("- Punycode (подмена символов)"); }
+        if (u.protocol === "http:") { risk += 20; notes.push("- Протокол HTTP без шифрования"); }
+        if (/\.(xyz|top|buzz|tk|ml|cf|gq|click|loan)$/i.test(host)) { risk += 25; notes.push("- Подозрительная доменная зона"); }
+        if (/(login|verify|gift|auth|steam|claim|wallet|bonus)/i.test(raw)) { risk += 20; notes.push("- Подозрительные слова в адресе"); }
 
         const dnsResp = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(host)}&type=A`);
         const dnsData = await dnsResp.json();
@@ -276,22 +265,22 @@
           const geoResp = await fetch(`https://ipwho.is/${ip}`);
           const geo = await geoResp.json();
           if (geo && geo.success !== false) {
-            geoInfo = `${geo.country || ""} (${geo.city || ""}) — ${geo.connection ? geo.connection.isp : ""}`;
+            geoInfo = `${geo.country || ""} (${geo.city || ""}) - ${geo.connection ? geo.connection.isp : ""}`;
           }
         } else {
           risk += 35;
-          notes.push("⚠️ Домен не имеет A-записи (возможно, мертв или заблокирован)");
+          notes.push("- Нет A-записи в DNS");
         }
 
-        const status = risk < 25 ? "🟢 Безопасно" : (risk < 60 ? "🟡 Подозрительно" : "🔴 Высокий риск фишинга!");
+        const status = risk < 25 ? "Чисто" : (risk < 60 ? "Подозрительно" : "Высокий риск фишинга");
         box.textContent =
-          `Статус: ${status} (Риск: ${Math.min(risk, 100)}%)\n` +
+          `Статус: ${status} (${Math.min(risk, 100)}%)\n` +
           `Домен: ${host}\n` +
           `IP: ${ip || "Не найден"}\n` +
           `Сервер: ${geoInfo}\n` +
-          (notes.length ? `\nНаходки:\n${notes.join("\n")}` : "\nЯвных маркеров фишинга не найдено.");
+          (notes.length ? `\nДетали:\n${notes.join("\n")}` : "\nПроблем не обнаружено.");
       } catch (e) {
-        box.textContent = "Ошибка разбора ссылки. Проверь правильность адреса.";
+        box.textContent = "Ошибка разбора ссылки.";
       }
     }
 
@@ -307,51 +296,46 @@
       const btn = document.getElementById("send_exif_btn");
       if (!file) return;
 
-      document.getElementById("file_label").textContent = "📄 " + file.name;
+      document.getElementById("file_label").textContent = file.name;
       box.style.display = "block";
-      box.textContent = "Читаю метаданные файла...";
+      box.textContent = "Чтение...";
 
       try {
         const data = await exifr.parse(file, true);
         const lines = [
-          `📁 Файл: ${file.name} (${(file.size / 1024).toFixed(1)} КБ)`
+          `Файл: ${file.name} (${(file.size / 1024).toFixed(1)} КБ)`
         ];
 
         if (!data) {
-          lines.push("⚠️ EXIF-метаданные стерты (возможно, фото было переслано со сжатием Telegram).");
+          lines.push("EXIF-данные отсутствуют.");
         } else {
-          if (data.Make || data.Model) lines.push(`📱 Устройство: ${data.Make || ""} ${data.Model || ""}`);
-          if (data.Software) lines.push(`⚙️ ПО / Система: ${data.Software}`);
-          if (data.DateTimeOriginal) lines.push(`🕒 Дата съемки: ${new Date(data.DateTimeOriginal).toLocaleString("ru-RU")}`);
-          if (data.ExifImageWidth && data.ExifImageHeight) lines.push(`📐 Разрешение: ${data.ExifImageWidth}x${data.ExifImageHeight}`);
-          if (data.LensModel) lines.push(`🔍 Объектив: ${data.LensModel}`);
+          if (data.Make || data.Model) lines.push(`Устройство: ${data.Make || ""} ${data.Model || ""}`);
+          if (data.Software) lines.push(`Система: ${data.Software}`);
+          if (data.DateTimeOriginal) lines.push(`Дата: ${new Date(data.DateTimeOriginal).toLocaleString("ru-RU")}`);
+          if (data.ExifImageWidth && data.ExifImageHeight) lines.push(`Разрешение: ${data.ExifImageWidth}x${data.ExifImageHeight}`);
+          if (data.LensModel) lines.push(`Объектив: ${data.LensModel}`);
 
           if (data.latitude && data.longitude) {
             const lat = data.latitude.toFixed(6);
             const lon = data.longitude.toFixed(6);
-            lines.push(`📍 Координаты: ${lat}, ${lon}`);
-            lines.push(`🗺 Карта: https://maps.google.com/?q=${lat},${lon}`);
+            lines.push(`Координаты: ${lat}, ${lon}`);
+            lines.push(`Карта: https://maps.google.com/?q=${lat},${lon}`);
           } else {
-            lines.push("📍 Геолокация (GPS): отсутствует в файле");
+            lines.push("Геолокация: нет данных");
           }
         }
 
-        lastExifReport = "Отчет EXIF-анализатора:\n" + lines.join("\n");
+        lastExifReport = "EXIF:\n" + lines.join("\n");
         box.textContent = lines.join("\n");
         btn.style.display = "block";
       } catch (e) {
-        box.textContent = "Не удалось прочитать EXIF из этого файла.";
+        box.textContent = "Не удалось прочитать EXIF.";
       }
     }
 
     function sendExifToBot() {
       if (!lastExifReport) return;
       tg.sendData(JSON.stringify({ action: "exif_report", report: lastExifReport }));
-    }
-
-    function lookupUser() {
-      const q = document.getElementById("lookup_input").value.trim();
-      tg.sendData(JSON.stringify({ action: "lookup_id", query: q }));
     }
   </script>
 </body>
