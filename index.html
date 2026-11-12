@@ -17,10 +17,8 @@
       --danger: #d9383a;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 18px 16px 96px; }
-    header { margin-bottom: 16px; }
-    header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
-    .tabs { display: grid; grid-template-columns: repeat(4, 1fr); background: #e8e9ed; padding: 4px; border-radius: 12px; margin-bottom: 16px; gap: 4px; }
+    body { background: var(--bg); color: var(--text); padding: 14px 16px 96px; }
+    .tabs { display: grid; grid-template-columns: repeat(4, 1fr); background: #e8e9ed; padding: 4px; border-radius: 12px; margin-bottom: 14px; gap: 4px; }
     .tab { border: none; background: transparent; padding: 8px 4px; font-size: 12px; font-weight: 600; color: #636366; border-radius: 9px; cursor: pointer; transition: 0.2s; }
     .tab.active { background: var(--card); color: var(--text); box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
     .section { display: none; }
@@ -30,22 +28,36 @@
     .row { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border); }
     .row:last-child { border-bottom: none; }
     .row-info h3 { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
-    .row-info p { font-size: 12px; color: var(--muted); }
+    .row-info p { font-size: 12px; color: var(--muted); line-height: 1.35; }
     .switch { position: relative; width: 48px; height: 28px; flex-shrink: 0; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; inset: 0; background: #d1d1d6; transition: .25s; border-radius: 28px; }
     .slider:before { position: absolute; content: ""; height: 24px; width: 24px; left: 2px; bottom: 2px; background: white; transition: .25s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
     input:checked + .slider { background: var(--accent); }
     input:checked + .slider:before { transform: translateX(20px); }
-    .field { margin-bottom: 12px; }
+    .secret-wrap { display: none; padding-bottom: 12px; }
+    .secret-wrap.open { display: block; }
+    .field { margin-bottom: 10px; }
     .field:last-child { margin-bottom: 0; }
-    .field label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
     .field input[type="text"], .field input[type="password"] {
-      width: 100%; padding: 11px 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; background: #f9f9fb; outline: none;
+      width: 100%; padding: 11px 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; background: #f9f9fb; outline: none; transition: border-color 0.2s;
     }
+    .field input.error { border-color: var(--danger); }
+    .ch-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid var(--border); gap: 12px; }
+    .ch-row:last-child { border-bottom: none; }
+    .ch-row span { font-size: 14px; font-weight: 600; }
+    .ch-row input { width: 155px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 9px; font-size: 13px; background: #f9f9fb; text-align: right; outline: none; }
     .btn { width: 100%; padding: 12px; border: none; border-radius: 11px; font-size: 14px; font-weight: 600; cursor: pointer; background: var(--accent); color: #fff; margin-top: 8px; }
+    .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+    .btn-row .btn { margin-top: 0; }
     .btn-outline { background: #ebebf0; color: var(--text); }
     .btn-danger { background: var(--danger); color: #fff; }
+    .hint-list { background: #f4f5f7; border-radius: 10px; padding: 10px 12px; font-size: 12px; color: var(--text); line-height: 1.5; margin-bottom: 12px; }
+    .hint-list code { font-weight: 700; background: #e5e5ea; padding: 1px 5px; border-radius: 5px; }
+    .mute-list { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 6px; }
+    .mute-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .mute-item:last-child { border-bottom: none; }
+    .mute-del { border: none; background: #ffecec; color: var(--danger); font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 8px; cursor: pointer; }
     .result-box { margin-top: 12px; padding: 12px; border-radius: 10px; background: #f4f5f7; font-size: 12.5px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; display: none; }
     .file-drop { border: 1.5px dashed #c7c7cc; border-radius: 12px; padding: 18px 12px; text-align: center; cursor: pointer; background: #fafafa; display: block; font-size: 13px; color: var(--text); }
     .file-drop input { display: none; }
@@ -55,21 +67,17 @@
 </head>
 <body>
 
-  <header>
-    <h1>Настройки</h1>
-  </header>
-
   <div class="tabs">
-    <button class="tab active" onclick="openTab('intercept', this)">Перехват</button>
+    <button class="tab active" onclick="openTab('intercept', this)">Основное</button>
     <button class="tab" onclick="openTab('special', this)">Режимы</button>
     <button class="tab" onclick="openTab('channels', this)">Каналы</button>
-    <button class="tab" onclick="openTab('osint', this)">Утилиты</button>
+    <button class="tab" onclick="openTab('osint', this)">Проверка</button>
   </div>
 
   <div id="intercept" class="section active">
     <div class="card">
       <div class="row">
-        <div class="row-info"><h3>Пауза</h3><p>Отключить перехват</p></div>
+        <div class="row-info"><h3>Пауза</h3><p>Временно не следить за чатами</p></div>
         <label class="switch"><input type="checkbox" id="paused"><span class="slider"></span></label>
       </div>
       <div class="row">
@@ -77,11 +85,11 @@
         <label class="switch"><input type="checkbox" id="save_deleted" checked><span class="slider"></span></label>
       </div>
       <div class="row">
-        <div class="row-info"><h3>Измененные</h3><p>Показывать старый и новый текст</p></div>
+        <div class="row-info"><h3>Измененные</h3><p>Показывать текст до и после правки</p></div>
         <label class="switch"><input type="checkbox" id="save_edited" checked><span class="slider"></span></label>
       </div>
       <div class="row">
-        <div class="row-info"><h3>Голосовые и кружки</h3><p>Сохранять аудио и видеосообщения</p></div>
+        <div class="row-info"><h3>Голосовые и кружки</h3><p>Сохранять войсы и видеосообщения</p></div>
         <label class="switch"><input type="checkbox" id="save_voice_circles" checked><span class="slider"></span></label>
       </div>
       <div class="row">
@@ -89,65 +97,90 @@
         <label class="switch"><input type="checkbox" id="save_photo_video" checked><span class="slider"></span></label>
       </div>
       <div class="row">
-        <div class="row-info"><h3>Сгорающие медиа</h3><p>Сохранять фото и видео с таймером по реплаю</p></div>
+        <div class="row-info"><h3>Сгорающие</h3><p>Вытаскивать фото и видео по реплаю</p></div>
         <label class="switch"><input type="checkbox" id="save_protected" checked><span class="slider"></span></label>
       </div>
     </div>
   </div>
 
   <div id="special" class="section">
+    <div class="card">
+      <div class="row">
+        <div class="row-info"><h3>Инкогнито</h3><p>Не сохранять мои сообщения у других</p></div>
+        <label class="switch"><input type="checkbox" id="stealth_mode" onchange="toggleSecret('stealth_wrap', this.checked)"><span class="slider"></span></label>
+      </div>
+      <div id="stealth_wrap" class="secret-wrap">
+        <div class="field"><input type="password" id="stealth_code" placeholder="Пароль"></div>
+      </div>
+
+      <div class="row">
+        <div class="row-info"><h3>Автоответчик</h3><p>Отвечать в личке за меня</p></div>
+        <label class="switch"><input type="checkbox" id="ai_mode" onchange="toggleSecret('ai_wrap', this.checked)"><span class="slider"></span></label>
+      </div>
+      <div id="ai_wrap" class="secret-wrap">
+        <div class="field"><input type="password" id="ai_code" placeholder="Ключ"></div>
+      </div>
+    </div>
+
     <div class="card block-card">
+      <div class="row-info" style="margin-bottom:10px;">
+        <h3>Мут и ловушка удаления</h3>
+        <p>Управление черным списком и возвратом текста</p>
+      </div>
+      <div class="hint-list">
+        <div><code>.ушел</code> прощальный текст + мут + возврат при сносе</div>
+        <div><code>.мут</code> тихо закинуть чат в игнор</div>
+        <div><code>.размут</code> снять мут и ловушку в чате</div>
+      </div>
       <div class="field">
-        <label>Код защиты</label>
-        <input type="password" id="stealth_code" placeholder="Пароль для переключения">
+        <input type="text" id="unmute_id_input" placeholder="ID собеседника (из отчета бота)">
       </div>
-      <div class="row">
-        <div class="row-info"><h3>Не логировать меня</h3><p>Игнорировать мои сообщения у других</p></div>
-        <label class="switch"><input type="checkbox" id="stealth_mode"><span class="slider"></span></label>
+      <div class="btn-row">
+        <button class="btn" onclick="unmuteOne()">Снять мут по ID</button>
+        <button class="btn btn-outline" onclick="rememberMute()">Записать в список</button>
       </div>
-      <div class="field" style="margin-top:12px;">
-        <label>Код автоответчика</label>
-        <input type="password" id="ai_code" placeholder="Пароль для переключения">
-      </div>
-      <div class="row">
-        <div class="row-info"><h3>Автоответчик</h3><p>Отвечать в ЛС через ИИ</p></div>
-        <label class="switch"><input type="checkbox" id="ai_mode"><span class="slider"></span></label>
-      </div>
-      <button class="btn btn-danger" onclick="clearBotCache()">Сбросить кэш</button>
+      <div id="mute_list_box" class="mute-list" style="display:none;"></div>
+      <button class="btn btn-outline" onclick="clearAllMutes()">Снять мут со всех</button>
+    </div>
+
+    <div class="card block-card">
+      <button class="btn btn-danger" style="margin-top:0;" onclick="clearBotCache()">Очистить кэш (48ч)</button>
     </div>
   </div>
 
   <div id="channels" class="section">
-    <div class="card block-card">
-      <div class="field"><label>Текст (ID канала или пусто для ЛС)</label><input type="text" id="ch_text" placeholder="-1001234567890"></div>
-      <div class="field"><label>Фото</label><input type="text" id="ch_photo" placeholder="-1001234567890"></div>
-      <div class="field"><label>Видео</label><input type="text" id="ch_video" placeholder="-1001234567890"></div>
-      <div class="field"><label>Голосовые</label><input type="text" id="ch_voice" placeholder="-1001234567890"></div>
-      <div class="field"><label>Кружки</label><input type="text" id="ch_video_note" placeholder="-1001234567890"></div>
+    <div class="card">
+      <div class="ch-row"><span>Текст</span><input type="text" id="ch_text" placeholder="В личку"></div>
+      <div class="ch-row"><span>Фото</span><input type="text" id="ch_photo" placeholder="В личку"></div>
+      <div class="ch-row"><span>Видео</span><input type="text" id="ch_video" placeholder="В личку"></div>
+      <div class="ch-row"><span>Войсы</span><input type="text" id="ch_voice" placeholder="В личку"></div>
+      <div class="ch-row"><span>Кружки</span><input type="text" id="ch_video_note" placeholder="В личку"></div>
     </div>
   </div>
 
   <div id="osint" class="section">
     <div class="card block-card">
       <div class="row-info" style="margin-bottom:10px;">
-        <h3>Проверка ссылок</h3>
+        <h3>Проверка ссылки</h3>
         <p>Домен, IP, хостинг и редиректы</p>
       </div>
       <div class="field">
         <input type="text" id="scan_url_input" placeholder="https://example.com">
       </div>
-      <button class="btn btn-outline" onclick="quickScanUrl()">Проверить здесь</button>
-      <button class="btn" onclick="deepScanViaBot()">Полная проверка в чат</button>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="quickScanUrl()">Тут</button>
+        <button class="btn" onclick="deepScanViaBot()">В чат</button>
+      </div>
       <div id="url_result" class="result-box"></div>
     </div>
 
     <div class="card block-card">
       <div class="row-info" style="margin-bottom:10px;">
-        <h3>Метаданные фото (EXIF)</h3>
-        <p>Устройство, дата съемки и координаты из исходника</p>
+        <h3>Метаданные фото</h3>
+        <p>Модель телефона, дата и координаты из файла</p>
       </div>
       <label class="file-drop">
-        <span id="file_label">Выбрать файл изображения</span>
+        <span id="file_label">Выбрать файл</span>
         <input type="file" id="exif_file" accept="image/*,.heic,.tiff" onchange="parseExif(this)">
       </label>
       <div id="exif_result" class="result-box"></div>
@@ -163,27 +196,98 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    const stateKey = "pashka_bot_panel_v3";
+    const stateKey = "pashka_bot_panel_v6";
+    const muteKey = "pashka_muted_ids";
     let lastExifReport = "";
+
+    function toggleSecret(wrapId, show) {
+      const el = document.getElementById(wrapId);
+      if (show) el.classList.add("open");
+      else el.classList.remove("open");
+    }
+
+    function getSavedMutes() {
+      try {
+        return JSON.parse(localStorage.getItem(muteKey) || "[]");
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function renderMutes() {
+      const box = document.getElementById("mute_list_box");
+      const list = getSavedMutes();
+      if (!list.length) {
+        box.style.display = "none";
+        box.innerHTML = "";
+        return;
+      }
+      box.style.display = "block";
+      box.innerHTML = list.map(id => `
+        <div class="mute-item">
+          <span>ID: <b>${id}</b></span>
+          <button class="mute-del" onclick="removeSavedMute('${id}')">Размут</button>
+        </div>
+      `).join("");
+    }
+
+    function rememberMute() {
+      const input = document.getElementById("unmute_id_input");
+      const val = input.value.trim();
+      if (!val) return;
+      const list = getSavedMutes();
+      if (!list.includes(val)) {
+        list.push(val);
+        localStorage.setItem(muteKey, JSON.stringify(list));
+      }
+      input.value = "";
+      renderMutes();
+    }
+
+    function removeSavedMute(id) {
+      const list = getSavedMutes().filter(item => item !== id);
+      localStorage.setItem(muteKey, JSON.stringify(list));
+      renderMutes();
+      tg.sendData(JSON.stringify({ action: "unmute_user", user_id: id }));
+    }
+
+    function unmuteOne() {
+      const val = document.getElementById("unmute_id_input").value.trim();
+      if (!val) return;
+      const list = getSavedMutes().filter(item => item !== val);
+      localStorage.setItem(muteKey, JSON.stringify(list));
+      renderMutes();
+      tg.sendData(JSON.stringify({ action: "unmute_user", user_id: val }));
+    }
+
+    function clearAllMutes() {
+      localStorage.removeItem(muteKey);
+      renderMutes();
+      tg.sendData(JSON.stringify({ action: "clear_mute_list" }));
+    }
 
     function loadSavedState() {
       try {
         const raw = localStorage.getItem(stateKey);
-        if (!raw) return;
-        const s = JSON.parse(raw);
-        ["paused", "save_deleted", "save_edited", "save_voice_circles", "save_photo_video", "save_protected", "stealth_mode", "ai_mode"].forEach(k => {
-          if (typeof s[k] === "boolean" && document.getElementById(k)) {
-            document.getElementById(k).checked = s[k];
-          }
-        });
-        if (s.channels) {
-          ["text", "photo", "video", "voice", "video_note"].forEach(m => {
-            if (s.channels[m] && document.getElementById("ch_" + m)) {
-              document.getElementById("ch_" + m).value = s.channels[m];
+        if (raw) {
+          const s = JSON.parse(raw);
+          ["paused", "save_deleted", "save_edited", "save_voice_circles", "save_photo_video", "save_protected", "stealth_mode", "ai_mode"].forEach(k => {
+            if (typeof s[k] === "boolean" && document.getElementById(k)) {
+              document.getElementById(k).checked = s[k];
             }
           });
+          toggleSecret("stealth_wrap", document.getElementById("stealth_mode").checked);
+          toggleSecret("ai_wrap", document.getElementById("ai_mode").checked);
+          if (s.channels) {
+            ["text", "photo", "video", "voice", "video_note"].forEach(m => {
+              if (s.channels[m] && document.getElementById("ch_" + m)) {
+                document.getElementById("ch_" + m).value = s.channels[m];
+              }
+            });
+          }
         }
       } catch (e) {}
+      renderMutes();
     }
     loadSavedState();
 
@@ -196,17 +300,20 @@
     }
 
     function saveSettings() {
-      const stealthCode = document.getElementById("stealth_code").value.trim();
-      const aiCode = document.getElementById("ai_code").value.trim();
+      const stealthInput = document.getElementById("stealth_code");
+      const aiInput = document.getElementById("ai_code");
       const stealthChecked = document.getElementById("stealth_mode").checked;
       const aiChecked = document.getElementById("ai_mode").checked;
 
-      if (stealthChecked && stealthCode && stealthCode !== "killme3197") {
-        alert("Неверный код защиты");
+      stealthInput.classList.remove("error");
+      aiInput.classList.remove("error");
+
+      if (stealthChecked && stealthInput.value.trim() && stealthInput.value.trim() !== "killme3197") {
+        stealthInput.classList.add("error");
         return;
       }
-      if (aiChecked && aiCode && aiCode !== "aime9713") {
-        alert("Неверный код автоответчика");
+      if (aiChecked && aiInput.value.trim() && aiInput.value.trim() !== "aime9713") {
+        aiInput.classList.add("error");
         return;
       }
 
