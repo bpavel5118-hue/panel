@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Панель управления</title>
+  <title>Настройки</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exifr/dist/full.umd.js"></script>
   <style>
     :root {
       --bg: #f2f2f7;
       --card: #ffffff;
       --text: #1c1c1e;
-      --subtext: #8e8e93;
-      --accent: #007aff;
+      --muted: #8e8e93;
+      --accent: #2c2c2e;
+      --line: #e5e5ea;
       --danger: #ff3b30;
-      --success: #34c759;
-      --border: #e5e5ea;
-      --input-bg: #f2f2f7;
     }
 
     * {
@@ -29,85 +29,93 @@
     body {
       background-color: var(--bg);
       color: var(--text);
-      padding: 16px 16px 96px 16px;
-      font-size: 15px;
-      line-height: 1.4;
+      padding: 14px 16px 92px;
+      min-height: 100vh;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
     }
 
-    .header {
-      margin-bottom: 14px;
-      padding: 0 4px;
+    .wrap {
+      max-width: 460px;
+      margin: 0 auto;
     }
 
-    .header h1 {
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: -0.3px;
-    }
-
-    .header p {
-      font-size: 13px;
-      color: var(--subtext);
-      margin-top: 2px;
-    }
-
-    .tabs {
+    /* Segmented Control */
+    .seg-bar {
+      position: relative;
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      background: #e5e5ea;
+      grid-template-columns: repeat(4, 1fr);
+      background: #e3e3e8;
       padding: 3px;
-      border-radius: 10px;
-      margin-bottom: 18px;
+      border-radius: 11px;
+      margin-bottom: 16px;
     }
 
-    .tab-btn {
+    .seg-pill {
+      position: absolute;
+      top: 3px;
+      bottom: 3px;
+      left: 3px;
+      width: calc((100% - 6px) / 4);
+      background: var(--card);
+      border-radius: 8.5px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08), 0 0.5px 1px rgba(0, 0, 0, 0.04);
+      transition: transform 0.24s cubic-bezier(0.32, 0.72, 0, 1);
+      z-index: 1;
+    }
+
+    .seg-btn {
+      position: relative;
+      z-index: 2;
       border: none;
       background: transparent;
-      padding: 7px 4px;
+      padding: 7px 2px;
       font-size: 13px;
-      font-weight: 600;
-      color: var(--text);
-      border-radius: 8px;
+      font-weight: 500;
+      color: #636366;
       cursor: pointer;
-      transition: all 0.18s ease;
+      transition: color 0.2s ease;
     }
 
-    .tab-btn.active {
-      background: var(--card);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    .seg-btn.active {
+      color: var(--text);
+      font-weight: 600;
     }
 
-    .tab-content {
+    /* Views */
+    .view {
       display: none;
+      animation: fade 0.18s ease-out;
     }
 
-    .tab-content.active {
+    .view.active {
       display: block;
     }
 
-    .section-title {
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      color: var(--subtext);
-      margin: 14px 0 6px 12px;
-      letter-spacing: 0.4px;
+    @keyframes fade {
+      from { opacity: 0; transform: translateY(3px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
+    /* Cards & Rows */
     .card {
       background: var(--card);
-      border-radius: 12px;
-      overflow: hidden;
+      border-radius: 14px;
+      padding: 0 16px;
       margin-bottom: 14px;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+    }
+
+    .card-pad {
+      padding: 15px 16px;
     }
 
     .row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 14px;
-      border-bottom: 0.5px solid var(--border);
+      padding: 12px 0;
+      border-bottom: 0.5px solid var(--line);
       gap: 12px;
     }
 
@@ -115,26 +123,29 @@
       border-bottom: none;
     }
 
-    .row-info {
-      flex: 1;
+    .row-no-border {
+      border-bottom: none;
     }
 
-    .row-title {
+    .info h3 {
       font-size: 15px;
       font-weight: 500;
+      line-height: 1.25;
+      color: var(--text);
     }
 
-    .row-sub {
+    .info p {
       font-size: 12px;
-      color: var(--subtext);
+      color: var(--muted);
       margin-top: 2px;
+      line-height: 1.3;
     }
 
+    /* iOS Switch */
     .switch {
       position: relative;
-      display: inline-block;
-      width: 48px;
-      height: 28px;
+      width: 50px;
+      height: 30px;
       flex-shrink: 0;
     }
 
@@ -148,412 +159,729 @@
       position: absolute;
       cursor: pointer;
       inset: 0;
-      background-color: #e9e9ea;
-      transition: 0.22s;
-      border-radius: 28px;
+      background-color: #e5e5ea;
+      transition: background-color 0.22s ease;
+      border-radius: 30px;
     }
 
     .slider:before {
       position: absolute;
       content: "";
-      height: 24px;
-      width: 24px;
+      height: 26px;
+      width: 26px;
       left: 2px;
       bottom: 2px;
-      background-color: white;
-      transition: 0.22s;
+      background-color: #ffffff;
+      transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1);
       border-radius: 50%;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.08);
     }
 
     input:checked + .slider {
-      background-color: var(--success);
+      background-color: var(--accent);
     }
 
     input:checked + .slider:before {
       transform: translateX(20px);
     }
 
-    .field-group {
-      padding: 12px 14px;
-      border-bottom: 0.5px solid var(--border);
+    /* Collapsible Secret Input */
+    .secret-wrap {
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-height 0.24s ease, opacity 0.2s ease, padding 0.2s ease;
+      border-bottom: 0.5px solid var(--line);
     }
 
-    .field-group:last-child {
+    .secret-wrap.open {
+      max-height: 64px;
+      opacity: 1;
+      padding-bottom: 12px;
+    }
+
+    .secret-wrap.last-secret {
       border-bottom: none;
     }
 
-    .field-label {
-      display: block;
-      font-size: 13px;
-      font-weight: 500;
-      margin-bottom: 6px;
-      color: var(--text);
-    }
-
-    .input {
+    .input-box {
       width: 100%;
-      background: var(--input-bg);
-      border: 1px solid transparent;
-      border-radius: 9px;
-      padding: 10px 12px;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #f7f7fa;
       font-size: 14px;
       color: var(--text);
       outline: none;
-      transition: border 0.15s;
+      transition: border-color 0.18s ease, background-color 0.18s ease;
     }
 
-    .input:focus {
-      border-color: var(--accent);
+    .input-box:focus {
       background: #ffffff;
+      border-color: #8e8e93;
+    }
+
+    .input-error {
+      border-color: var(--danger) !important;
+      background: #fff5f5 !important;
+      animation: shake 0.32s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-3px); }
+    }
+
+    /* Compact Channel Table */
+    .ch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 0;
+      border-bottom: 0.5px solid var(--line);
+    }
+
+    .ch-row:last-child {
+      border-bottom: none;
+    }
+
+    .ch-label {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+
+    .ch-input {
+      width: 62%;
+      border: none;
+      background: transparent;
+      text-align: right;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .ch-input::placeholder {
+      color: #c7c7cc;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* Buttons */
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
     }
 
     .btn {
       width: 100%;
+      padding: 11px 14px;
       border: none;
       border-radius: 10px;
-      padding: 11px 14px;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
+      transition: opacity 0.15s ease, transform 0.1s ease;
       background: var(--accent);
       color: #ffffff;
-      margin-top: 8px;
-      transition: opacity 0.15s;
     }
 
     .btn:active {
-      opacity: 0.75;
+      transform: scale(0.985);
+      opacity: 0.9;
     }
 
-    .btn-secondary {
-      background: #e5e5ea;
+    .btn-soft {
+      background: #e9e9ee;
       color: var(--text);
     }
 
-    .btn-danger {
-      background: rgba(255, 59, 48, 0.12);
+    .btn-clear {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      background: rgba(255, 59, 48, 0.1);
       color: var(--danger);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease;
     }
 
-    .save-bar {
+    .btn-clear:active {
+      background: rgba(255, 59, 48, 0.18);
+    }
+
+    /* File Picker & Output */
+    .file-pick {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px dashed #c7c7cc;
+      border-radius: 10px;
+      padding: 14px 12px;
+      background: #f9f9fb;
+      cursor: pointer;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text);
+      margin-top: 10px;
+      transition: background 0.15s ease;
+    }
+
+    .file-pick:active {
+      background: #efeff4;
+    }
+
+    .file-pick input {
+      display: none;
+    }
+
+    .out-box {
+      margin-top: 10px;
+      padding: 11px 12px;
+      border-radius: 10px;
+      background: #f4f4f8;
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: var(--text);
+      white-space: pre-wrap;
+      word-break: break-word;
+      display: none;
+    }
+
+    .map-link {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 6px 10px;
+      background: #e5e5ea;
+      color: var(--text);
+      border-radius: 7px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Bottom Bar */
+    .bottom-bar {
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(242, 242, 247, 0.9);
-      backdrop-filter: blur(12px);
-      padding: 12px 16px 20px 16px;
-      border-top: 0.5px solid var(--border);
+      bottom: 14px;
+      left: 16px;
+      right: 16px;
+      max-width: 460px;
+      margin: 0 auto;
+      z-index: 20;
     }
 
     .save-btn {
       width: 100%;
-      border: none;
-      border-radius: 12px;
       padding: 14px;
-      font-size: 16px;
-      font-weight: 600;
+      border: none;
+      border-radius: 13px;
       background: var(--accent);
-      color: #fff;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
       cursor: pointer;
+      transition: transform 0.1s ease, opacity 0.15s ease;
     }
 
-    .exif-box {
-      margin-top: 8px;
-      font-size: 12px;
-      color: var(--subtext);
-      background: var(--input-bg);
-      padding: 8px 10px;
-      border-radius: 8px;
-      display: none;
-      white-space: pre-wrap;
+    .save-btn:active {
+      transform: scale(0.99);
+      opacity: 0.92;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-80px);
+      background: rgba(28, 28, 30, 0.92);
+      color: #ffffff;
+      padding: 9px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      z-index: 100;
+      transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+      pointer-events: none;
+      backdrop-filter: blur(8px);
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
     }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <h1>Панель управления</h1>
-    <p>Настройки перехвата и утилиты</p>
+  <div id="toast" class="toast">Сохранено</div>
+
+  <div class="wrap">
+    <!-- Навигация -->
+    <div class="seg-bar">
+      <div id="seg_pill" class="seg-pill"></div>
+      <button class="seg-btn active" onclick="switchTab('main', 0, this)">Основное</button>
+      <button class="seg-btn" onclick="switchTab('modes', 1, this)">Режимы</button>
+      <button class="seg-btn" onclick="switchTab('channels', 2, this)">Каналы</button>
+      <button class="seg-btn" onclick="switchTab('tools', 3, this)">Проверка</button>
+    </div>
+
+    <!-- Вкладка 1: Основное -->
+    <div id="main" class="view active">
+      <div class="card">
+        <div class="row">
+          <div class="info">
+            <h3>Пауза</h3>
+            <p>Временно не следить за чатами</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="paused">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="row">
+          <div class="info">
+            <h3>Удаленные</h3>
+            <p>Присылать стертые сообщения</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="save_deleted" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="row">
+          <div class="info">
+            <h3>Измененные</h3>
+            <p>Показывать текст до и после правки</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="save_edited" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="row">
+          <div class="info">
+            <h3>Голосовые и кружки</h3>
+            <p>Сохранять войсы и видеосообщения</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="save_voice_circles" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="row">
+          <div class="info">
+            <h3>Фото и видео</h3>
+            <p>Сохранять обычные медиафайлы</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="save_photo_video" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="row">
+          <div class="info">
+            <h3>Сгорающие</h3>
+            <p>Фото и видео с таймером по реплаю</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="save_protected" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Вкладка 2: Режимы -->
+    <div id="modes" class="view">
+      <div class="card">
+        <div class="row" id="stealth_row">
+          <div class="info">
+            <h3>Инкогнито</h3>
+            <p>Не сохранять мои сообщения у других</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="stealth_mode" onchange="toggleSecretInputs()">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div id="stealth_wrap" class="secret-wrap">
+          <input type="password" id="stealth_code" class="input-box" placeholder="Пароль">
+        </div>
+
+        <div class="row row-no-border" id="ai_row">
+          <div class="info">
+            <h3>Автоответчик</h3>
+            <p>Отвечать в личке за меня</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="ai_mode" onchange="toggleSecretInputs()">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div id="ai_wrap" class="secret-wrap last-secret">
+          <input type="password" id="ai_code" class="input-box" placeholder="Ключ">
+        </div>
+      </div>
+
+      <button class="btn-clear" onclick="clearBotCache()">Очистить кэш</button>
+    </div>
+
+    <!-- Вкладка 3: Каналы -->
+    <div id="channels" class="view">
+      <div class="card">
+        <div class="ch-row">
+          <span class="ch-label">Текст</span>
+          <input type="text" id="ch_text" class="ch-input" placeholder="В личку">
+        </div>
+        <div class="ch-row">
+          <span class="ch-label">Фото</span>
+          <input type="text" id="ch_photo" class="ch-input" placeholder="В личку">
+        </div>
+        <div class="ch-row">
+          <span class="ch-label">Видео</span>
+          <input type="text" id="ch_video" class="ch-input" placeholder="В личку">
+        </div>
+        <div class="ch-row">
+          <span class="ch-label">Войсы</span>
+          <input type="text" id="ch_voice" class="ch-input" placeholder="В личку">
+        </div>
+        <div class="ch-row">
+          <span class="ch-label">Кружки</span>
+          <input type="text" id="ch_video_note" class="ch-input" placeholder="В личку">
+        </div>
+      </div>
+    </div>
+
+    <!-- Вкладка 4: Проверка -->
+    <div id="tools" class="view">
+      <div class="card card-pad">
+        <div class="info" style="margin-bottom: 10px;">
+          <h3>Проверка ссылки</h3>
+          <p>Домен, IP, хостинг и редиректы</p>
+        </div>
+        <input type="text" id="scan_url_input" class="input-box" placeholder="https://...">
+        <div class="btn-row">
+          <button class="btn btn-soft" onclick="quickScanUrl()">Тут</button>
+          <button class="btn" onclick="deepScanViaBot()">В чат</button>
+        </div>
+        <div id="url_result" class="out-box"></div>
+      </div>
+
+      <div class="card card-pad">
+        <div class="info">
+          <h3>Метаданные фото</h3>
+          <p>Модель телефона, дата и координаты из файла</p>
+        </div>
+        <label class="file-pick">
+          <span id="file_label">Выбрать оригинал фото</span>
+          <input type="file" id="exif_file" accept="image/*,.heic,.tiff" onchange="parseExif(this)">
+        </label>
+        <div id="exif_result" class="out-box"></div>
+        <div id="map_holder"></div>
+        <button id="send_exif_btn" class="btn btn-soft" style="display:none; margin-top:8px;" onclick="sendExifToBot()">Отправить в чат</button>
+      </div>
+    </div>
   </div>
 
-  <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('intercept', this)">Перехват</button>
-    <button class="tab-btn" onclick="switchTab('channels', this)">Каналы</button>
-    <button class="tab-btn" onclick="switchTab('tools', this)">Утилиты</button>
-  </div>
-
-  <!-- ВКЛАДКА 1: ПЕРЕХВАТ -->
-  <div id="tab-intercept" class="tab-content active">
-    <div class="section-title">Состояние системы</div>
-    <div class="card">
-      <div class="row">
-        <div class="row-info">
-          <div class="row-title">Пауза перехвата</div>
-          <div class="row-sub">Временно остановить сохранение событий</div>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="paused">
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="row">
-        <div class="row-info">
-          <div class="row-title">Режим невидимки</div>
-          <div class="row-sub">Тихая работа без внешних признаков</div>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="stealth_mode">
-          <span class="slider"></span>
-        </label>
-      </div>
-    </div>
-
-    <div class="section-title">Фильтры сообщений</div>
-    <div class="card">
-      <div class="row">
-        <div class="row-info">
-          <div class="row-title">Удаленные сообщения</div>
-          <div class="row-sub">Присылать стертый собеседником текст и медиа</div>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="save_deleted" checked>
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="row">
-        <div class="row-info">
-          <div class="row-title">Измененные сообщения</div>
-          <div class="row-sub">Показывать оригинал до редактирования</div>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="save_edited" checked>
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="row">
-        <div class="row-info">
-          <div class="row-title">Детектор пересылок</div>
-          <div class="row-sub">Показывать автора пересланного сообщения</div>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="save_forwards" checked>
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="row">
-        <div class="row-info">
-          <div class="row-title">Фото и видео</div>
-          <div class="row-sub">Сохранять удаленные снимки и видеоролики</div>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="save_photo_video" checked>
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="row">
-        <div class="row-info">
-          <div class="row-title">Голосовые и кружки</div>
-          <div class="row-sub">Сохранять аудио и видеосообщения</div>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="save_voice_circles" checked>
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="row">
-        <div class="row-info">
-          <div class="row-title">Сгорающие медиа (таймер)</div>
-          <div class="row-sub">Сохранять одноразовые фото и видео</div>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="save_protected" checked>
-          <span class="slider"></span>
-        </label>
-      </div>
-    </div>
-  </div>
-
-  <!-- ВКЛАДКА 2: КАНАЛЫ -->
-  <div id="tab-channels" class="tab-content">
-    <div class="section-title">ID каналов по типам (оставь пустым для ЛС)</div>
-    <div class="card">
-      <div class="field-group">
-        <label class="field-label">Текстовые сообщения</label>
-        <input type="text" id="ch_text" class="input" placeholder="-1001234567890">
-      </div>
-      <div class="field-group">
-        <label class="field-label">Фотографии</label>
-        <input type="text" id="ch_photo" class="input" placeholder="-1001234567890">
-      </div>
-      <div class="field-group">
-        <label class="field-label">Видеоролики</label>
-        <input type="text" id="ch_video" class="input" placeholder="-1001234567890">
-      </div>
-      <div class="field-group">
-        <label class="field-label">Голосовые сообщения</label>
-        <input type="text" id="ch_voice" class="input" placeholder="-1001234567890">
-      </div>
-      <div class="field-group">
-        <label class="field-label">Видеокружки</label>
-        <input type="text" id="ch_video_note" class="input" placeholder="-1001234567890">
-      </div>
-    </div>
-  </div>
-
-  <!-- ВКЛАДКА 3: УТИЛИТЫ -->
-  <div id="tab-tools" class="tab-content">
-    <div class="section-title">Проверка ссылок</div>
-    <div class="card">
-      <div class="field-group">
-        <label class="field-label">Ссылка для проверки редиректов и домена</label>
-        <input type="text" id="scan_url_input" class="input" placeholder="https://example.com">
-        <button class="btn" onclick="scanUrl()">Проверить ссылку</button>
-      </div>
-    </div>
-
-    <div class="section-title">Поиск по Telegram ID</div>
-    <div class="card">
-      <div class="field-group">
-        <label class="field-label">ID пользователя или чата</label>
-        <input type="text" id="lookup_id_input" class="input" placeholder="123456789">
-        <button class="btn btn-secondary" onclick="lookupId()">Пробить ID</button>
-      </div>
-    </div>
-
-    <div class="section-title">Анализ фото и файлов</div>
-    <div class="card">
-      <div class="field-group">
-        <label class="field-label">Выбери файл для просмотра параметров</label>
-        <input type="file" id="exif_file" class="input" accept="image/*" onchange="inspectFile(this)">
-        <div id="exif_preview" class="exif-box"></div>
-        <button class="btn btn-secondary" onclick="sendExifReport()">Отправить отчет в чат</button>
-      </div>
-    </div>
-
-    <div class="section-title">Память сервера</div>
-    <div class="card">
-      <div class="field-group">
-        <button class="btn btn-danger" onclick="clearCache()">Очистить кэш сообщений</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="save-bar">
-    <button class="save-btn" onclick="saveSettings()">Сохранить настройки</button>
+  <!-- Нижняя панель -->
+  <div class="bottom-bar" id="save_bar">
+    <button class="save-btn" onclick="saveSettings()">Сохранить</button>
   </div>
 
   <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
-
-    const STORAGE_KEY = "pashka_bot_panel_v8";
-    let lastExifReport = "";
-
-    function switchTab(tabId, btn) {
-      document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
-      document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
-      document.getElementById("tab-" + tabId).classList.add("active");
-      btn.classList.add("active");
+    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+    if (tg) {
+      tg.expand();
+      tg.ready();
     }
 
-    function loadLocalState() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return;
-        const s = JSON.parse(raw);
+    const storageKey = "pashka_panel_cfg";
+    let lastExifReport = "";
+    let unlockedStealth = false;
+    let unlockedAi = false;
 
-        const boolKeys = [
-          "paused", "stealth_mode", "save_deleted", "save_edited",
-          "save_forwards", "save_photo_video", "save_voice_circles", "save_protected"
-        ];
-        boolKeys.forEach(k => {
-          if (typeof s[k] === "boolean" && document.getElementById(k)) {
-            document.getElementById(k).checked = s[k];
+    const flagIds = [
+      "paused", "save_deleted", "save_edited",
+      "save_voice_circles", "save_photo_video", "save_protected",
+      "stealth_mode", "ai_mode"
+    ];
+
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => t.classList.remove("show"), 2000);
+    }
+
+    function markInvalid(el, hint) {
+      el.classList.remove("input-error");
+      void el.offsetWidth;
+      el.classList.add("input-error");
+      showToast(hint);
+      setTimeout(() => el.classList.remove("input-error"), 1200);
+    }
+
+    function toggleSecretInputs() {
+      const stOn = document.getElementById("stealth_mode").checked;
+      const aiOn = document.getElementById("ai_mode").checked;
+      const stWrap = document.getElementById("stealth_wrap");
+      const aiWrap = document.getElementById("ai_wrap");
+      const stRow = document.getElementById("stealth_row");
+
+      if (stOn && !unlockedStealth) {
+        stWrap.classList.add("open");
+        stRow.style.borderBottom = "none";
+      } else {
+        stWrap.classList.remove("open");
+        stRow.style.borderBottom = "0.5px solid var(--line)";
+      }
+
+      if (aiOn && !unlockedAi) {
+        aiWrap.classList.add("open");
+      } else {
+        aiWrap.classList.remove("open");
+      }
+    }
+
+    function loadSettings() {
+      try {
+        const raw = localStorage.getItem(storageKey);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+
+        flagIds.forEach(k => {
+          if (typeof data[k] === "boolean" && document.getElementById(k)) {
+            document.getElementById(k).checked = data[k];
           }
         });
 
-        if (s.channels) {
-          document.getElementById("ch_text").value = s.channels.text || "";
-          document.getElementById("ch_photo").value = s.channels.photo || "";
-          document.getElementById("ch_video").value = s.channels.video || "";
-          document.getElementById("ch_voice").value = s.channels.voice || "";
-          document.getElementById("ch_video_note").value = s.channels.video_note || "";
+        if (data.stealth_mode) unlockedStealth = true;
+        if (data.ai_mode) unlockedAi = true;
+
+        if (data.channels) {
+          ["text", "photo", "video", "voice", "video_note"].forEach(m => {
+            if (data.channels[m] && document.getElementById("ch_" + m)) {
+              document.getElementById("ch_" + m).value = data.channels[m];
+            }
+          });
+        }
+        toggleSecretInputs();
+      } catch (e) {}
+    }
+
+    function switchTab(id, idx, btn) {
+      document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+      document.querySelectorAll(".seg-btn").forEach(b => b.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+      btn.classList.add("active");
+
+      const pill = document.getElementById("seg_pill");
+      pill.style.transform = `translateX(${idx * 100}%)`;
+
+      document.getElementById("save_bar").style.display = (id === "tools") ? "none" : "block";
+    }
+
+    function sendPayload(payload, toastText) {
+      showToast(toastText || "Отправлено");
+      try {
+        if (tg && tg.initData) {
+          tg.sendData(JSON.stringify(payload));
         }
       } catch (e) {}
     }
 
-    function collectState() {
-      return {
+    function saveSettings() {
+      const stChecked = document.getElementById("stealth_mode").checked;
+      const aiChecked = document.getElementById("ai_mode").checked;
+      const stInput = document.getElementById("stealth_code");
+      const aiInput = document.getElementById("ai_code");
+
+      if (stChecked && !unlockedStealth) {
+        if (stInput.value.trim() !== "killme3197") {
+          markInvalid(stInput, "Неверный пароль инкогнито");
+          return;
+        }
+        unlockedStealth = true;
+      }
+      if (!stChecked) unlockedStealth = false;
+
+      if (aiChecked && !unlockedAi) {
+        if (aiInput.value.trim() !== "aime9713") {
+          markInvalid(aiInput, "Неверный ключ автоответчика");
+          return;
+        }
+        unlockedAi = true;
+      }
+      if (!aiChecked) unlockedAi = false;
+
+      toggleSecretInputs();
+
+      const payload = {
         action: "save_settings",
         paused: document.getElementById("paused").checked,
-        stealth_mode: document.getElementById("stealth_mode").checked,
         save_deleted: document.getElementById("save_deleted").checked,
         save_edited: document.getElementById("save_edited").checked,
-        save_forwards: document.getElementById("save_forwards").checked,
-        save_photo_video: document.getElementById("save_photo_video").checked,
         save_voice_circles: document.getElementById("save_voice_circles").checked,
+        save_photo_video: document.getElementById("save_photo_video").checked,
         save_protected: document.getElementById("save_protected").checked,
+        stealth_mode: stChecked,
+        ai_mode: aiChecked,
         channels: {
-          text: document.getElementById("ch_text").value.trim(),
-          photo: document.getElementById("ch_photo").value.trim(),
-          video: document.getElementById("ch_video").value.trim(),
-          voice: document.getElementById("ch_voice").value.trim(),
-          video_note: document.getElementById("ch_video_note").value.trim()
+          text: document.getElementById("ch_text").value.trim() || null,
+          photo: document.getElementById("ch_photo").value.trim() || null,
+          video: document.getElementById("ch_video").value.trim() || null,
+          voice: document.getElementById("ch_voice").value.trim() || null,
+          video_note: document.getElementById("ch_video_note").value.trim() || null
         }
       };
+
+      localStorage.setItem(storageKey, JSON.stringify(payload));
+      sendPayload(payload, "Настройки сохранены");
     }
 
-    function saveSettings() {
-      const payload = collectState();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-      tg.sendData(JSON.stringify(payload));
+    function clearBotCache() {
+      sendPayload({ action: "clear_cache" }, "Запрос на очистку отправлен");
     }
 
-    function scanUrl() {
-      const url = document.getElementById("scan_url_input").value.trim();
-      if (!url) return;
-      tg.sendData(JSON.stringify({ action: "scan_url", url: url }));
+    async function quickScanUrl() {
+      const input = document.getElementById("scan_url_input");
+      let raw = input.value.trim();
+      const box = document.getElementById("url_result");
+
+      if (!raw) {
+        markInvalid(input, "Введи ссылку");
+        return;
+      }
+
+      box.style.display = "block";
+      box.textContent = "Проверяю...";
+
+      try {
+        if (!raw.startsWith("http://") && !raw.startsWith("https://")) {
+          raw = "https://" + raw;
+        }
+        const u = new URL(raw);
+        const host = u.hostname;
+        let risk = 0;
+        let flags = [];
+
+        if (host.includes("xn--")) { risk += 45; flags.push("Punycode (подмена букв)"); }
+        if (u.protocol === "http:") { risk += 20; flags.push("Без шифрования (HTTP)"); }
+        if (/\.(xyz|top|buzz|tk|ml|cf|gq|click|loan)$/i.test(host)) { risk += 25; flags.push("Дешевая доменная зона"); }
+        if (/(login|verify|gift|auth|steam|claim|wallet|bonus)/i.test(raw)) { risk += 20; flags.push("Слова авторизации или раздач"); }
+
+        const dnsResp = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(host)}&type=A`);
+        const dnsData = await dnsResp.json();
+        const ip = (dnsData.Answer && dnsData.Answer.length) ? dnsData.Answer[dnsData.Answer.length - 1].data : null;
+
+        let server = "Не определен";
+        if (ip) {
+          const geoResp = await fetch(`https://ipwho.is/${ip}`);
+          const geo = await geoResp.json();
+          if (geo && geo.success !== false) {
+            const loc = [geo.country, geo.city].filter(Boolean).join(", ");
+            const isp = geo.connection ? geo.connection.isp : "";
+            server = [loc, isp].filter(Boolean).join(" · ");
+          }
+        } else {
+          risk += 35;
+          flags.push("Домен не найден в DNS");
+        }
+
+        const verdict = risk < 25 ? "Чисто" : (risk < 60 ? "Подозрительно" : "Похоже на фишинг");
+        const lines = [
+          `Вердикт: ${verdict} (${Math.min(risk, 100)}%)`,
+          `Домен: ${host}`,
+          `IP: ${ip || "нет"}`,
+          `Хостинг: ${server}`
+        ];
+        if (flags.length) {
+          lines.push(`Детали: ${flags.join(", ")}`);
+        }
+        box.textContent = lines.join("\n");
+      } catch (e) {
+        box.textContent = "Некорректный адрес ссылки.";
+      }
     }
 
-    function lookupId() {
-      const targetId = document.getElementById("lookup_id_input").value.trim();
-      if (!targetId) return;
-      tg.sendData(JSON.stringify({ action: "lookup_id", target_id: targetId }));
+    function deepScanViaBot() {
+      const input = document.getElementById("scan_url_input");
+      const url = input.value.trim();
+      if (!url) {
+        markInvalid(input, "Введи ссылку");
+        return;
+      }
+      sendPayload({ action: "scan_url", url: url }, "Отправлено боту на проверку");
     }
 
-    function inspectFile(input) {
-      const file = input.files && input.files[0];
+    async function parseExif(input) {
+      const file = input.files[0];
+      const box = document.getElementById("exif_result");
+      const mapHolder = document.getElementById("map_holder");
+      const btn = document.getElementById("send_exif_btn");
       if (!file) return;
-      const box = document.getElementById("exif_preview");
-      const sizeKb = (file.size / 1024).toFixed(1);
-      const modified = file.lastModified ? new Date(file.lastModified).toLocaleString("ru-RU") : "Неизвестно";
 
-      const img = new Image();
-      img.onload = function () {
-        lastExifReport = `Имя: ${file.name}\nТип: ${file.type || "неизвестен"}\nРазмер: ${sizeKb} КБ\nРазрешение: ${img.width}x${img.height}\nИзменен: ${modified}`;
+      document.getElementById("file_label").textContent = file.name;
+      box.style.display = "block";
+      box.textContent = "Читаю файл...";
+      mapHolder.innerHTML = "";
+
+      try {
+        const data = await exifr.parse(file, true);
+        const lines = [
+          `Файл: ${file.name} (${(file.size / 1024).toFixed(1)} КБ)`
+        ];
+
+        if (!data) {
+          lines.push("Метаданные стерты или отсутствуют.");
+        } else {
+          if (data.Make || data.Model) lines.push(`Устройство: ${[data.Make, data.Model].filter(Boolean).join(" ")}`);
+          if (data.Software) lines.push(`Система: ${data.Software}`);
+          if (data.DateTimeOriginal) lines.push(`Снято: ${new Date(data.DateTimeOriginal).toLocaleString("ru-RU")}`);
+          if (data.ExifImageWidth && data.ExifImageHeight) lines.push(`Размер: ${data.ExifImageWidth}×${data.ExifImageHeight}`);
+          if (data.LensModel) lines.push(`Камера: ${data.LensModel}`);
+
+          if (data.latitude && data.longitude) {
+            const lat = data.latitude.toFixed(6);
+            const lon = data.longitude.toFixed(6);
+            const mapUrl = `https://maps.google.com/?q=${lat},${lon}`;
+            lines.push(`Координаты: ${lat}, ${lon}`);
+            mapHolder.innerHTML = `<a href="${mapUrl}" target="_blank" class="map-link">Открыть точку на карте</a>`;
+          } else {
+            lines.push("Геолокация: нет в файле");
+          }
+        }
+
+        lastExifReport = lines.join("\n");
         box.textContent = lastExifReport;
-        box.style.display = "block";
-      };
-      img.onerror = function () {
-        lastExifReport = `Имя: ${file.name}\nТип: ${file.type || "неизвестен"}\nРазмер: ${sizeKb} КБ\nИзменен: ${modified}`;
-        box.textContent = lastExifReport;
-        box.style.display = "block";
-      };
-      img.src = URL.createObjectURL(file);
+        btn.style.display = "block";
+      } catch (e) {
+        box.textContent = "Не удалось прочитать метаданные из файла.";
+      }
     }
 
-    function sendExifReport() {
+    function sendExifToBot() {
       if (!lastExifReport) return;
-      tg.sendData(JSON.stringify({ action: "exif_report", report: lastExifReport }));
+      sendPayload({ action: "exif_report", report: lastExifReport }, "Отчет отправлен в чат");
     }
 
-    function clearCache() {
-      tg.sendData(JSON.stringify({ action: "clear_cache" }));
-    }
-
-    loadLocalState();
+    loadSettings();
   </script>
 </body>
 </html>
