@@ -53,7 +53,7 @@
 
     .tabs {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       background: #e5e5ea;
       padding: 3px;
       border-radius: 10px;
@@ -64,7 +64,7 @@
       border: none;
       background: transparent;
       padding: 7px 4px;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
       color: var(--text);
       border-radius: 8px;
@@ -191,7 +191,7 @@
       color: var(--text);
     }
 
-    .input, .textarea {
+    .input {
       width: 100%;
       background: var(--input-bg);
       border: 1px solid transparent;
@@ -203,14 +203,9 @@
       transition: border 0.15s;
     }
 
-    .input:focus, .textarea:focus {
+    .input:focus {
       border-color: var(--accent);
       background: #ffffff;
-    }
-
-    .textarea {
-      min-height: 76px;
-      resize: vertical;
     }
 
     .btn {
@@ -239,28 +234,6 @@
     .btn-danger {
       background: rgba(255, 59, 48, 0.12);
       color: var(--danger);
-    }
-
-    .model-badge {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 14px;
-      border-bottom: 0.5px solid var(--border);
-      font-size: 13px;
-    }
-
-    .model-badge:last-child {
-      border-bottom: none;
-    }
-
-    .priority-tag {
-      font-size: 11px;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 6px;
-      background: #e5f1ff;
-      color: var(--accent);
     }
 
     .save-bar {
@@ -301,13 +274,12 @@
 <body>
 
   <div class="header">
-    <h1>Бизнес и ИИ-Агент</h1>
-    <p>Управление перехватом и каскадом нейросетей</p>
+    <h1>Панель управления</h1>
+    <p>Настройки перехвата и утилиты</p>
   </div>
 
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('intercept', this)">Перехват</button>
-    <button class="tab-btn" onclick="switchTab('agent', this)">ИИ-Агент</button>
     <button class="tab-btn" onclick="switchTab('channels', this)">Каналы</button>
     <button class="tab-btn" onclick="switchTab('tools', this)">Утилиты</button>
   </div>
@@ -319,7 +291,7 @@
       <div class="row">
         <div class="row-info">
           <div class="row-title">Пауза перехвата</div>
-          <div class="row-sub">Временно остановить логирование чатов</div>
+          <div class="row-sub">Временно остановить сохранение событий</div>
         </div>
         <label class="switch">
           <input type="checkbox" id="paused">
@@ -338,12 +310,12 @@
       </div>
     </div>
 
-    <div class="section-title">Фильтры событий</div>
+    <div class="section-title">Фильтры сообщений</div>
     <div class="card">
       <div class="row">
         <div class="row-info">
           <div class="row-title">Удаленные сообщения</div>
-          <div class="row-sub">Восстанавливать стертый текст и медиа</div>
+          <div class="row-sub">Присылать стертый собеседником текст и медиа</div>
         </div>
         <label class="switch">
           <input type="checkbox" id="save_deleted" checked>
@@ -353,7 +325,7 @@
       <div class="row">
         <div class="row-info">
           <div class="row-title">Измененные сообщения</div>
-          <div class="row-sub">Показавать старую и новую версию текста</div>
+          <div class="row-sub">Показывать оригинал до редактирования</div>
         </div>
         <label class="switch">
           <input type="checkbox" id="save_edited" checked>
@@ -363,7 +335,7 @@
       <div class="row">
         <div class="row-info">
           <div class="row-title">Детектор пересылок</div>
-          <div class="row-sub">Раскрывать первоисточник пересланных сообщений</div>
+          <div class="row-sub">Показывать автора пересланного сообщения</div>
         </div>
         <label class="switch">
           <input type="checkbox" id="save_forwards" checked>
@@ -373,7 +345,7 @@
       <div class="row">
         <div class="row-info">
           <div class="row-title">Фото и видео</div>
-          <div class="row-sub">Сохранять удаленные изображения и ролики</div>
+          <div class="row-sub">Сохранять удаленные снимки и видеоролики</div>
         </div>
         <label class="switch">
           <input type="checkbox" id="save_photo_video" checked>
@@ -393,7 +365,7 @@
       <div class="row">
         <div class="row-info">
           <div class="row-title">Сгорающие медиа (таймер)</div>
-          <div class="row-sub">Скачивать фото и видео с защитой от копирования</div>
+          <div class="row-sub">Сохранять одноразовые фото и видео</div>
         </div>
         <label class="switch">
           <input type="checkbox" id="save_protected" checked>
@@ -403,66 +375,9 @@
     </div>
   </div>
 
-  <!-- ВКЛАДКА 2: ИИ-АГЕНТ -->
-  <div id="tab-agent" class="tab-content">
-    <div class="section-title">Режим работы агента</div>
-    <div class="card">
-      <div class="row">
-        <div class="row-info">
-          <div class="row-title">Автоответчик в Business-чатах</div>
-          <div class="row-sub">Агент отвечает собеседникам вместо тебя (в личке с ботом агент работает всегда)</div>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="ai_mode">
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="field-group">
-        <label class="field-label">Инструкция (системный промпт)</label>
-        <textarea id="ai_prompt" class="textarea" placeholder="Отвечай кратко, по делу и на русском языке..."></textarea>
-      </div>
-    </div>
-
-    <div class="section-title">Ключи API для ротации моделей</div>
-    <div class="card">
-      <div class="field-group">
-        <label class="field-label">Google Gemini API Key (AI Studio)</label>
-        <input type="password" id="gemini_key" class="input" placeholder="AIzaSy...">
-      </div>
-      <div class="field-group">
-        <label class="field-label">OpenRouter API Key (Резервный пул бесплатных ИИ)</label>
-        <input type="password" id="openrouter_key" class="input" placeholder="sk-or-v1-...">
-      </div>
-    </div>
-
-    <div class="section-title">Активный каскад бесплатных моделей</div>
-    <div class="card">
-      <div class="model-badge">
-        <span>1. Gemini 2.5 Flash (Google Direct)</span>
-        <span class="priority-tag">Основная</span>
-      </div>
-      <div class="model-badge">
-        <span>2. Gemini 2.0 Flash (Google Direct)</span>
-        <span class="priority-tag">Резерв 1</span>
-      </div>
-      <div class="model-badge">
-        <span>3. DeepSeek V3 Free (OpenRouter)</span>
-        <span class="priority-tag">Резерв 2</span>
-      </div>
-      <div class="model-badge">
-        <span>4. Qwen 2.5 Coder 32B Free (OpenRouter)</span>
-        <span class="priority-tag">Для кода</span>
-      </div>
-      <div class="model-badge">
-        <span>5. Llama 3.3 70B Free (OpenRouter)</span>
-        <span class="priority-tag">Резерв 3</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ВКЛАДКА 3: КАНАЛЫ -->
+  <!-- ВКЛАДКА 2: КАНАЛЫ -->
   <div id="tab-channels" class="tab-content">
-    <div class="section-title">Маршрутизация по типам (ID канала или пусто для ЛС)</div>
+    <div class="section-title">ID каналов по типам (оставь пустым для ЛС)</div>
     <div class="card">
       <div class="field-group">
         <label class="field-label">Текстовые сообщения</label>
@@ -487,14 +402,14 @@
     </div>
   </div>
 
-  <!-- ВКЛАДКА 4: УТИЛИТЫ -->
+  <!-- ВКЛАДКА 3: УТИЛИТЫ -->
   <div id="tab-tools" class="tab-content">
-    <div class="section-title">Антифишинг и проверка ссылок</div>
+    <div class="section-title">Проверка ссылок</div>
     <div class="card">
       <div class="field-group">
-        <label class="field-label">URL-адрес для проверки редиректов и домена</label>
+        <label class="field-label">Ссылка для проверки редиректов и домена</label>
         <input type="text" id="scan_url_input" class="input" placeholder="https://example.com">
-        <button class="btn" onclick="scanUrl()">Проверить ссылку через бота</button>
+        <button class="btn" onclick="scanUrl()">Проверить ссылку</button>
       </div>
     </div>
 
@@ -507,20 +422,20 @@
       </div>
     </div>
 
-    <div class="section-title">Анализ файла / фото на устройстве</div>
+    <div class="section-title">Анализ фото и файлов</div>
     <div class="card">
       <div class="field-group">
-        <label class="field-label">Выбери изображение для проверки параметров</label>
+        <label class="field-label">Выбери файл для просмотра параметров</label>
         <input type="file" id="exif_file" class="input" accept="image/*" onchange="inspectFile(this)">
         <div id="exif_preview" class="exif-box"></div>
-        <button class="btn btn-secondary" onclick="sendExifReport()">Отправить отчет в чат бота</button>
+        <button class="btn btn-secondary" onclick="sendExifReport()">Отправить отчет в чат</button>
       </div>
     </div>
 
     <div class="section-title">Память сервера</div>
     <div class="card">
       <div class="field-group">
-        <button class="btn btn-danger" onclick="clearCache()">Очистить кэш сообщений на сервере</button>
+        <button class="btn btn-danger" onclick="clearCache()">Очистить кэш сообщений</button>
       </div>
     </div>
   </div>
@@ -533,7 +448,7 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    const STORAGE_KEY = "pashka_bot_panel_v7";
+    const STORAGE_KEY = "pashka_bot_panel_v8";
     let lastExifReport = "";
 
     function switchTab(tabId, btn) {
@@ -551,18 +466,13 @@
 
         const boolKeys = [
           "paused", "stealth_mode", "save_deleted", "save_edited",
-          "save_forwards", "save_photo_video", "save_voice_circles",
-          "save_protected", "ai_mode"
+          "save_forwards", "save_photo_video", "save_voice_circles", "save_protected"
         ];
         boolKeys.forEach(k => {
           if (typeof s[k] === "boolean" && document.getElementById(k)) {
             document.getElementById(k).checked = s[k];
           }
         });
-
-        if (s.ai_prompt) document.getElementById("ai_prompt").value = s.ai_prompt;
-        if (s.gemini_key) document.getElementById("gemini_key").value = s.gemini_key;
-        if (s.openrouter_key) document.getElementById("openrouter_key").value = s.openrouter_key;
 
         if (s.channels) {
           document.getElementById("ch_text").value = s.channels.text || "";
@@ -585,10 +495,6 @@
         save_photo_video: document.getElementById("save_photo_video").checked,
         save_voice_circles: document.getElementById("save_voice_circles").checked,
         save_protected: document.getElementById("save_protected").checked,
-        ai_mode: document.getElementById("ai_mode").checked,
-        ai_prompt: document.getElementById("ai_prompt").value.trim(),
-        gemini_key: document.getElementById("gemini_key").value.trim(),
-        openrouter_key: document.getElementById("openrouter_key").value.trim(),
         channels: {
           text: document.getElementById("ch_text").value.trim(),
           photo: document.getElementById("ch_photo").value.trim(),
@@ -626,12 +532,12 @@
 
       const img = new Image();
       img.onload = function () {
-        lastExifReport = `Имя: ${file.name}\nТип: ${file.type || "неизвестен"}\nРазмер: ${sizeKb} КБ\nРазрешение: ${img.width}x${img.height}\nДата изменения: ${modified}`;
+        lastExifReport = `Имя: ${file.name}\nТип: ${file.type || "неизвестен"}\nРазмер: ${sizeKb} КБ\nРазрешение: ${img.width}x${img.height}\nИзменен: ${modified}`;
         box.textContent = lastExifReport;
         box.style.display = "block";
       };
       img.onerror = function () {
-        lastExifReport = `Имя: ${file.name}\nТип: ${file.type || "неизвестен"}\nРазмер: ${sizeKb} КБ\nДата изменения: ${modified}`;
+        lastExifReport = `Имя: ${file.name}\nТип: ${file.type || "неизвестен"}\nРазмер: ${sizeKb} КБ\nИзменен: ${modified}`;
         box.textContent = lastExifReport;
         box.style.display = "block";
       };
