@@ -75,7 +75,7 @@
       if (user && user.id !== ALLOWED_ID) {
         document.body.innerHTML = "<div style='display:flex;height:100vh;align-items:center;justify-content:center;color:#ff3b30;font-weight:bold;font-size:18px;'>Доступ запрещен</div>";
         setTimeout(() => tg.close(), 2000);
-        throw new Error("Unauthorized access attempt");
+        throw new Error("Unauthorized access");
       }
     }
   </script>
@@ -150,28 +150,28 @@
       <div class="card card-pad">
         <div class="info" style="margin-bottom: 10px;">
           <h3>Проверка ссылки</h3>
-          <p>Домен, IP, хостинг, ИИ-анализ</p>
+          <p>Анализ домена, сервера и флагов</p>
         </div>
         <input type="text" id="scan_url_input" class="input-box" placeholder="https://...">
         <div class="btn-row">
-          <button class="btn btn-soft" onclick="quickScanUrl()">Поверхностно</button>
-          <button class="btn" onclick="deepScanViaBot()">ИИ-анализ (в чат)</button>
+          <button class="btn btn-soft" onclick="quickScanUrl()">Тут</button>
+          <button class="btn" onclick="deepScanViaBot()">В чат</button>
         </div>
         <div id="url_result" class="out-box"></div>
       </div>
 
       <div class="card card-pad">
         <div class="info">
-          <h3>Глубокий анализ фото (EXIF)</h3>
-          <p>Детальные настройки камеры и GPS</p>
+          <h3>Метаданные фото</h3>
+          <p>Настройки камеры, софт и координаты</p>
         </div>
         <label class="file-pick">
-          <span id="file_label">Выбрать оригинал фото</span>
+          <span id="file_label">Выбрать оригинал</span>
           <input type="file" id="exif_file" accept="image/*,.heic,.tiff" onchange="parseExif(this)">
         </label>
         <div id="exif_result" class="out-box"></div>
         <div id="map_holder"></div>
-        <button id="send_exif_btn" class="btn btn-soft" style="display:none; margin-top:8px;" onclick="sendExifToBot()">Отправить отчет в чат</button>
+        <button id="send_exif_btn" class="btn btn-soft" style="display:none; margin-top:8px;" onclick="sendExifToBot()">В чат</button>
       </div>
     </div>
   </div>
@@ -229,7 +229,7 @@
     function sendPayload(payload, toastText) {
       if (!tg) { showToast("Открой панель внутри Telegram"); return; }
       showToast(toastText || "Отправлено");
-      try { tg.sendData(JSON.stringify(payload)); } catch (e) { showToast("Открой через кнопку Mini app внизу"); }
+      try { tg.sendData(JSON.stringify(payload)); } catch (e) { showToast("Ошибка отправки"); }
     }
 
     function saveSettings() {
@@ -256,9 +256,8 @@
       localStorage.setItem(storageKey, JSON.stringify(payload)); sendPayload(payload, "Настройки сохранены");
     }
 
-    function clearBotCache() { sendPayload({ action: "clear_cache" }, "Запрос на очистку отправлен"); }
+    function clearBotCache() { sendPayload({ action: "clear_cache" }, "Отправлено"); }
 
-    // Вычисление энтропии Шеннона для домена (определяет сгенерированные/рандомные имена)
     function calcEntropy(str) {
       const len = str.length;
       const frequencies = Array.from(str).reduce((freq, c) => (freq[c] = (freq[c] || 0) + 1, freq), {});
@@ -269,36 +268,31 @@
       const input = document.getElementById("scan_url_input"); let raw = input.value.trim();
       const box = document.getElementById("url_result");
       if (!raw) { markInvalid(input, "Введи ссылку"); return; }
-      box.style.display = "block"; box.textContent = "Проверяю...";
+      box.style.display = "block"; box.textContent = "Проверка...";
 
       try {
         if (!raw.startsWith("http://") && !raw.startsWith("https://")) raw = "https://" + raw;
         const u = new URL(raw); const host = u.hostname.toLowerCase();
         let risk = 0; let flags = [];
 
-        // Базовые угрозы
         if (host.includes("xn--")) { risk += 45; flags.push("Punycode (визуальная подмена)"); }
         if (u.protocol === "http:") { risk += 20; flags.push("Без шифрования (HTTP)"); }
         
-        // Сложные эвристики
         const entropy = calcEntropy(host.replace(/\.[a-z]+$/, ''));
-        if (entropy > 3.8) { risk += 30; flags.push("Высокая энтропия (возможно автогенерация DGA)"); }
-        if ((host.match(/\./g) || []).length > 3) { risk += 20; flags.push("Слишком много поддоменов"); }
+        if (entropy > 3.8) { risk += 30; flags.push("Высокая энтропия (генерация имени)"); }
+        if ((host.match(/\./g) || []).length > 3) { risk += 20; flags.push("Избыток поддоменов"); }
 
-        // Токены обмана
         if (/(login|verify|gift|auth|steam|claim|wallet|bonus|trade|security|update)/i.test(raw)) { risk += 20; flags.push("Триггеры социальной инженерии"); }
-        if (/\.(xyz|top|buzz|tk|ml|cf|gq|click|loan|rest|work|cam)$/i.test(host)) { risk += 30; flags.push("Подозрительная доменная зона (часто используется спамерами)"); }
+        if (/\.(xyz|top|buzz|tk|ml|cf|gq|click|loan|rest|work|cam)$/i.test(host)) { risk += 30; flags.push("Доменная зона из группы риска"); }
 
-        // Тайпосквоттинг и бренды
         if (/st[eеaаrn]{2,3}m/.test(host) && !host.endsWith("steamcommunity.com") && !host.endsWith("steampowered.com")) { risk += 50; flags.push("Тайпосквоттинг (Steam)"); }
         if (/t[eе]l[eе]g[rг][aа]m/.test(host) && !host.endsWith("telegram.org") && !host.endsWith("t.me")) { risk += 50; flags.push("Тайпосквоттинг (Telegram)"); }
         if (/y[aа]nd[eе]x/.test(host) && !host.endsWith("yandex.ru") && !host.endsWith("ya.ru")) { risk += 50; flags.push("Тайпосквоттинг (Yandex)"); }
 
-        // Облачные абузы
         const freeHosts = [".pages.dev", ".vercel.app", ".github.io", ".onrender.com", ".repl.co", ".web.app", ".netlify.app", ".surge.sh", ".firebaseapp.com"];
         if (freeHosts.some(fh => host.endsWith(fh))) {
           if (flags.some(f => f.includes("социальной инженерии") || f.includes("Тайпосквоттинг"))) {
-            risk += 65; flags.push("Критично: маскировка на бесплатном облаке");
+            risk += 65; flags.push("Маскировка на бесплатном облаке");
           } else {
             risk += 15; flags.push("Бесплатный облачный хостинг");
           }
@@ -310,17 +304,17 @@
         let server = "Не определен";
         if (ip) {
           const geoResp = await fetch(`https://ipwho.is/${ip}`); const geo = await geoResp.json();
-          if (geo && geo.success !== false) server = [geo.country, geo.city, geo.connection ? geo.connection.isp : ""].filter(Boolean).join(" · ");
+          if (geo && geo.success !== false) server = [geo.country, geo.city, geo.connection ? geo.connection.isp : ""].filter(Boolean).join(", ");
         } else { risk += 35; flags.push("DNS запись не найдена"); }
 
-        const verdict = risk < 25 ? "Чисто" : (risk < 60 ? "Подозрительно" : "ОПАСНО (Возможен фишинг)");
+        const verdict = risk < 25 ? "Чисто" : (risk < 60 ? "Подозрительно" : "Фишинг");
         const lines = [
-          `Вердикт: ${verdict} (${Math.min(risk, 100)}% риска)`,
-          `Домен: ${host} (Энтропия: ${entropy.toFixed(2)})`,
+          `Вердикт: ${verdict} (${Math.min(risk, 100)}%)`,
+          `Домен: ${host}`,
           `IP: ${ip || "нет"}`,
           `Сервер: ${server}`
         ];
-        if (flags.length) lines.push(`\nФлаги безопасности:\n- ${flags.join("\n- ")}`);
+        if (flags.length) lines.push(`Флаги:\n- ${flags.join("\n- ")}`);
         
         box.textContent = lines.join("\n");
       } catch (e) { box.textContent = "Некорректная ссылка."; }
@@ -329,10 +323,9 @@
     function deepScanViaBot() {
       const input = document.getElementById("scan_url_input"); const url = input.value.trim();
       if (!url) { markInvalid(input, "Введи ссылку"); return; }
-      sendPayload({ action: "scan_url", url: url }, "Отправлено ИИ-аналитику в чат");
+      sendPayload({ action: "scan_url", url: url }, "Отправлено в чат");
     }
 
-    // Прокачанный парсер EXIF (все доступные RAW-данные)
     async function parseExif(input) {
       const file = input.files[0];
       const box = document.getElementById("exif_result");
@@ -341,55 +334,50 @@
       if (!file) return;
 
       document.getElementById("file_label").textContent = file.name;
-      box.style.display = "block"; box.textContent = "Извлекаю массив данных..."; mapHolder.innerHTML = "";
+      box.style.display = "block"; box.textContent = "Обработка..."; mapHolder.innerHTML = "";
 
       try {
-        // Запрашиваем ВСЕ секции: TIFF, EXIF, GPS, IPTC, XMP
         const data = await exifr.parse(file, {tiff: true, exif: true, gps: true, iptc: true, xmp: true});
-        const lines = [`📷 Файл: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} МБ)`];
+        const lines = [`Файл: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} МБ)`];
 
         if (!data || Object.keys(data).length === 0) {
-          lines.push("Метаданные стерты или отсутствуют. (Возможно, файл прошел через мессенджер/соцсеть)");
+          lines.push("Метаданные отсутствуют или стерты.");
         } else {
-          // Устройство
           if (data.Make || data.Model) lines.push(`Устройство: ${[data.Make, data.Model].filter(Boolean).join(" ")}`);
           if (data.LensModel) lines.push(`Объектив: ${data.LensModel}`);
           if (data.Software) {
             lines.push(`Прошивка/Софт: ${data.Software}`);
             if (/photoshop|lightroom|snapseed|vsco|picsart/i.test(data.Software)) {
-              lines.push(`Внимание: Фото было обработано в графическом редакторе.`);
+              lines.push(`Внимание: файл был открыт в редакторе.`);
             }
           }
 
-          // Технические параметры съемки (Экспозиция)
           const techParams = [];
           if (data.ISO) techParams.push(`ISO ${data.ISO}`);
           if (data.ExposureTime) techParams.push(`${data.ExposureTime >= 1 ? data.ExposureTime : '1/' + Math.round(1/data.ExposureTime)}s`);
           if (data.FNumber) techParams.push(`f/${data.FNumber}`);
           if (data.FocalLength) techParams.push(`${data.FocalLength}mm`);
-          if (techParams.length > 0) lines.push(`Параметры: ${techParams.join(" | ")}`);
+          if (techParams.length > 0) lines.push(`Параметры съемки: ${techParams.join(", ")}`);
 
           if (data.Flash !== undefined) {
-            const flashFired = (data.Flash & 1) !== 0; // Бит 0 указывает на срабатывание
+            const flashFired = (data.Flash & 1) !== 0;
             lines.push(`Вспышка: ${flashFired ? "Сработала" : "Без вспышки"}`);
           }
 
-          // Даты
           if (data.DateTimeOriginal) {
-            lines.push(`Дата съемки: ${new Date(data.DateTimeOriginal).toLocaleString("ru-RU")}`);
+            lines.push(`Снято: ${new Date(data.DateTimeOriginal).toLocaleString("ru-RU")}`);
           } else if (data.CreateDate) {
-            lines.push(`Дата создания: ${new Date(data.CreateDate).toLocaleString("ru-RU")}`);
+            lines.push(`Создано: ${new Date(data.CreateDate).toLocaleString("ru-RU")}`);
           }
           
-          if (data.ExifImageWidth && data.ExifImageHeight) lines.push(`📐 Исходный размер: ${data.ExifImageWidth}×${data.ExifImageHeight} px`);
+          if (data.ExifImageWidth && data.ExifImageHeight) lines.push(`Размер: ${data.ExifImageWidth}x${data.ExifImageHeight}`);
 
-          // GPS
           if (data.latitude && data.longitude) {
             const lat = data.latitude.toFixed(6); const lon = data.longitude.toFixed(6);
-            lines.push(`GPS Координаты: ${lat}, ${lon}`);
+            lines.push(`Координаты: ${lat}, ${lon}`);
             const altitude = data.GPSAltitude ? ` (Высота: ${Math.round(data.GPSAltitude)}м)` : "";
             if (altitude) lines.push(`${altitude}`);
-            mapHolder.innerHTML = `<a href="https://maps.google.com/?q=${lat},${lon}" target="_blank" class="map-link">Открыть на Google Картах</a>`;
+            mapHolder.innerHTML = `<a href="https://maps.google.com/?q=${lat},${lon}" target="_blank" class="map-link">Карта</a>`;
           } else {
             lines.push("Геолокация: Отсутствует");
           }
@@ -399,7 +387,7 @@
         box.textContent = lastExifReport;
         btn.style.display = "block";
       } catch (e) {
-        box.textContent = "Не удалось прочитать EXIF. Формат не поддерживается.";
+        box.textContent = "Не удалось прочитать EXIF данные.";
       }
     }
 
