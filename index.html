@@ -413,35 +413,29 @@
   <script>
     const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
     const ALLOWED_ID = 1895885663;
-    const ACCESS_TOKEN_KEY = "pashka_auth_verified_v2";
 
     (function enforceAccessControl() {
-      let authorized = false;
-      const params = new URLSearchParams(window.location.search);
-      const urlUid = params.get("uid");
-
-      if (tg) {
-        tg.expand();
-        tg.ready();
-
-        const tgUser = tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user : null;
-        if (tgUser) {
-          if (Number(tgUser.id) === ALLOWED_ID) {
-            authorized = true;
-            try { localStorage.setItem(ACCESS_TOKEN_KEY, String(ALLOWED_ID)); } catch (e) {}
-          }
-        } else if (tg.platform && tg.platform !== "unknown") {
-          if (urlUid === String(ALLOWED_ID) || localStorage.getItem(ACCESS_TOKEN_KEY) === String(ALLOWED_ID)) {
-            authorized = true;
-            try { localStorage.setItem(ACCESS_TOKEN_KEY, String(ALLOWED_ID)); } catch (e) {}
-          }
-        }
+      if (!tg || !tg.platform || tg.platform === "unknown") {
+        document.body.innerHTML = "<div style='display:flex;height:100vh;align-items:center;justify-content:center;color:#ff3b30;font-weight:600;font-size:16px;'>Доступ закрыт</div>";
+        throw new Error("Outside Telegram");
       }
 
-      if (!authorized) {
+      tg.expand();
+      tg.ready();
+
+      const tgUser = tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user : null;
+      if (tgUser && Number(tgUser.id) !== ALLOWED_ID) {
         document.body.innerHTML = "<div style='display:flex;height:100vh;align-items:center;justify-content:center;color:#ff3b30;font-weight:600;font-size:16px;'>Доступ закрыт</div>";
-        if (tg) setTimeout(() => tg.close(), 1500);
-        throw new Error("Access denied");
+        setTimeout(() => tg.close(), 1500);
+        throw new Error("Unauthorized user");
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      const urlUid = params.get("uid");
+      if (urlUid && Number(urlUid) !== ALLOWED_ID) {
+        document.body.innerHTML = "<div style='display:flex;height:100vh;align-items:center;justify-content:center;color:#ff3b30;font-weight:600;font-size:16px;'>Доступ закрыт</div>";
+        setTimeout(() => tg.close(), 1500);
+        throw new Error("Unauthorized uid");
       }
     })();
   </script>
@@ -632,7 +626,7 @@
 
     function loadSettings() {
       try {
-        const raw = localStorage.getItem(storageKey);
+        const raw = localStorage.getItem(storageKey) || localStorage.getItem("pashka_panel_cfg");
         if (!raw) return;
         const data = JSON.parse(raw);
 
@@ -699,9 +693,9 @@
         const report = await buildFullUrlReport(payload.url, true);
         await postDirectMessage(report);
       } else if (payload.action === "clear_cache") {
-        await postDirectMessage("Запрос на очистку кэша получен.");
+        await postDirectMessage("Кэш очищен.");
       } else if (payload.action === "save_settings") {
-        await postDirectMessage("Настройки обновлены.");
+        await postDirectMessage("Настройки сохранены.");
       }
     }
 
@@ -758,6 +752,13 @@
       sendPayload({ action: "clear_cache" }, "Кэш очищен");
     }
 
+    function extractCleanUrl(rawText) {
+      const s = rawText.trim();
+      const match = s.match(/https?:\/\/[^\s"'<>]+/i);
+      if (match) return match[0];
+      return s.split(/\s+/)[0];
+    }
+
     function calcEntropy(str) {
       if (!str) return 0;
       const len = str.length;
@@ -807,7 +808,7 @@
     }
 
     function evaluateSingleUrl(rawInput) {
-      let raw = rawInput.trim();
+      let raw = extractCleanUrl(rawInput);
       if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(raw)) {
         raw = "https://" + raw;
       }
@@ -868,7 +869,7 @@
 
       if (entropy > 3.75 && sld.length >= 9) {
         risk += 30;
-        flags.push("Высокая энтропия домена (" + entropy.toFixed(2) + ")");
+        flags.append ? flags.append("Высокая энтропия") : flags.push("Высокая энтропия домена (" + entropy.toFixed(2) + ")");
       }
 
       if (parts.length >= 4 || (host.match(/-/g) || []).length >= 3) {
@@ -945,9 +946,11 @@
         }
       }
       if (!innerUrl) {
-        const decodedQuery = decodeURIComponent(u.search || "");
-        const m = decodedQuery.match(/[?&][a-z_]+=(https?:\/\/[^\s&]+)/i);
-        if (m) innerUrl = m[1];
+        try {
+          const decodedQuery = decodeURIComponent(u.search || "");
+          const m = decodedQuery.match(/[?&][a-z_]+=(https?:\/\/[^\s&]+)/i);
+          if (m) innerUrl = m[1];
+        } catch (e) {}
       }
 
       if (innerUrl) {
@@ -966,7 +969,8 @@
     }
 
     async function buildFullUrlReport(rawUrl, withConclusion) {
-      const evalRes = evaluateSingleUrl(rawUrl);
+      const cleanedInput = extractCleanUrl(rawUrl);
+      const evalRes = evaluateSingleUrl(cleanedInput);
       const targetHost = evalRes.host;
       let risk = evalRes.risk;
       const flags = [...evalRes.flags];
@@ -1007,7 +1011,7 @@
 
       const lines = [
         `Вердикт: ${verdict} (${finalRisk}%)`,
-        `Исходный: ${rawUrl}`,
+        `Исходный: ${cleanedInput}`,
         `Целевой хост: ${targetHost}`,
         `IP: ${ip || "нет"}`,
         `Хостинг: ${server}`
@@ -1021,7 +1025,7 @@
 
       if (withConclusion) {
         try {
-          const prompt = `Оцени ссылку на фишинг.\nURL: ${rawUrl}\nЦелевой хост: ${targetHost}\nIP: ${ip || "нет"}\nХостинг: ${server}\nВыявленные признаки: ${flags.join("; ") || "нет"}\nДай сухой технический вывод в 1-2 предложения без эмодзи и без упоминания ИИ.`;
+          const prompt = `Оцени ссылку на фишинг.\nURL: ${cleanedInput}\nЦелевой хост: ${targetHost}\nIP: ${ip || "нет"}\nХостинг: ${server}\nВыявленные признаки: ${flags.join("; ") || "нет"}\nДай сухой технический вывод в 1-2 предложения без эмодзи и без упоминания ИИ.`;
           const resp = await fetch("https://text.pollinations.ai/", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -1065,7 +1069,7 @@
 
     function deepScanViaBot() {
       const input = document.getElementById("scan_url_input");
-      const url = input.value.trim();
+      const url = extractCleanUrl(input.value);
       if (!url) {
         markInvalid(input, "Введи ссылку");
         return;
@@ -1099,6 +1103,20 @@
         };
         img.src = url;
       });
+    }
+
+    function formatExifDate(val) {
+      if (!val) return null;
+      if (val instanceof Date && !isNaN(val.getTime())) {
+        return val.toLocaleString("ru-RU");
+      }
+      const str = String(val).trim();
+      const normalized = str.replace(/^(\d{4}):(\d{2}):(\d{2})/, "$1-$2-$3");
+      const parsed = new Date(normalized);
+      if (!isNaN(parsed.getTime())) {
+        return parsed.toLocaleString("ru-RU");
+      }
+      return str;
     }
 
     async function parseExif(input) {
@@ -1137,7 +1155,7 @@
         }
 
         if (file.lastModified) {
-          lines.push(`Изменен на диске: ${new Date(file.lastModified).toLocaleString("ru-RU")}`);
+          lines.push(`Изменен на устройстве: ${new Date(file.lastModified).toLocaleString("ru-RU")}`);
         }
 
         if (!data || Object.keys(data).length === 0) {
@@ -1191,7 +1209,7 @@
           }
 
           const extraOptics = [];
-          if (data.ExposureCompensation !== undefined) {
+          if (data.ExposureCompensation !== undefined && !isNaN(Number(data.ExposureCompensation))) {
             const ev = Number(data.ExposureCompensation);
             extraOptics.push(`Экспокоррекция ${ev > 0 ? "+" + ev.toFixed(1) : ev.toFixed(1)} EV`);
           }
@@ -1213,36 +1231,38 @@
             lines.push(`Цветовой профиль: ${data.ProfileDescription || (data.ColorSpace === 1 ? "sRGB" : data.ColorSpace)}`);
           }
 
-          if (data.DateTimeOriginal) {
+          const shotDate = formatExifDate(data.DateTimeOriginal || data.CreateDate);
+          if (shotDate) {
             const offset = data.OffsetTimeOriginal ? ` (UTC${data.OffsetTimeOriginal})` : "";
-            lines.push(`Дата съемки: ${new Date(data.DateTimeOriginal).toLocaleString("ru-RU")}${offset}`);
-          } else if (data.CreateDate) {
-            lines.push(`Дата создания: ${new Date(data.CreateDate).toLocaleString("ru-RU")}`);
+            lines.push(`Дата съемки: ${shotDate}${offset}`);
           }
 
-          if (data.ModifyDate && data.DateTimeOriginal) {
-            const diffSec = Math.abs(new Date(data.ModifyDate) - new Date(data.DateTimeOriginal)) / 1000;
-            if (diffSec > 60) {
-              lines.push(`Дата перезаписи: ${new Date(data.ModifyDate).toLocaleString("ru-RU")}`);
-            }
+          const modDate = formatExifDate(data.ModifyDate);
+          if (modDate && shotDate && modDate !== shotDate) {
+            lines.push(`Дата перезаписи: ${modDate}`);
           }
 
-          if (data.latitude !== undefined && data.longitude !== undefined) {
+          if (data.latitude !== undefined && data.longitude !== undefined && !isNaN(Number(data.latitude)) && !isNaN(Number(data.longitude))) {
             const lat = Number(data.latitude).toFixed(6);
             const lon = Number(data.longitude).toFixed(6);
             lines.push(`Координаты: ${lat}, ${lon}`);
 
             const gpsExtra = [];
-            if (data.GPSAltitude !== undefined) gpsExtra.push(`Высота: ${Math.round(data.GPSAltitude)} м`);
-            if (data.GPSSpeed !== undefined) gpsExtra.push(`Скорость: ${Number(data.GPSSpeed).toFixed(1)} км/ч`);
-            if (data.GPSImgDirection !== undefined) gpsExtra.push(`Азимут: ${Math.round(data.GPSImgDirection)}°`);
-            if (data.GPSHPositioningError !== undefined) gpsExtra.push(`Точность: ±${Math.round(data.GPSHPositioningError)} м`);
+            if (data.GPSAltitude !== undefined && !isNaN(Number(data.GPSAltitude))) gpsExtra.push(`Высота: ${Math.round(Number(data.GPSAltitude))} м`);
+            if (data.GPSSpeed !== undefined && !isNaN(Number(data.GPSSpeed))) gpsExtra.push(`Скорость: ${Number(data.GPSSpeed).toFixed(1)} км/ч`);
+            if (data.GPSImgDirection !== undefined && !isNaN(Number(data.GPSImgDirection))) gpsExtra.push(`Азимут: ${Math.round(Number(data.GPSImgDirection))}°`);
+            if (data.GPSHPositioningError !== undefined && !isNaN(Number(data.GPSHPositioningError))) gpsExtra.push(`Точность: ±${Math.round(Number(data.GPSHPositioningError))} м`);
             if (gpsExtra.length) {
               lines.push(`Гео-параметры: ${gpsExtra.join(", ")}`);
             }
 
             try {
-              const nomResp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&accept-language=ru`);
+              const ctrl = new AbortController();
+              const timer = setTimeout(() => ctrl.abort(), 3000);
+              const nomResp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&accept-language=ru`, {
+                signal: ctrl.signal
+              });
+              clearTimeout(timer);
               if (nomResp.ok) {
                 const nomData = await nomResp.json();
                 if (nomData && nomData.display_name) {
