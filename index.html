@@ -413,6 +413,23 @@
 </head>
 <body>
 
+  <script>
+    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+    const ALLOWED_ID = 1895885663;
+
+    if (tg) {
+      tg.expand();
+      tg.ready();
+      
+      const user = tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user : null;
+      if (user && user.id !== ALLOWED_ID) {
+        document.body.innerHTML = "<div style='display:flex;height:100vh;align-items:center;justify-content:center;color:#ff3b30;font-weight:bold;font-size:18px;'>Доступ запрещен</div>";
+        setTimeout(() => tg.close(), 2000);
+        throw new Error("Unauthorized access attempt");
+      }
+    }
+  </script>
+
   <div id="toast" class="toast">Сохранено</div>
 
   <div class="wrap">
@@ -588,12 +605,6 @@
   </div>
 
   <script>
-    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-    if (tg) {
-      tg.expand();
-      tg.ready();
-    }
-
     const storageKey = "pashka_panel_cfg";
     let lastExifReport = "";
     let unlockedStealth = false;
@@ -765,14 +776,40 @@
           raw = "https://" + raw;
         }
         const u = new URL(raw);
-        const host = u.hostname;
+        const host = u.hostname.toLowerCase();
         let risk = 0;
         let flags = [];
 
         if (host.includes("xn--")) { risk += 45; flags.push("Punycode (подмена букв)"); }
         if (u.protocol === "http:") { risk += 20; flags.push("Без шифрования (HTTP)"); }
         if (/\.(xyz|top|buzz|tk|ml|cf|gq|click|loan)$/i.test(host)) { risk += 25; flags.push("Дешевая доменная зона"); }
-        if (/(login|verify|gift|auth|steam|claim|wallet|bonus)/i.test(raw)) { risk += 20; flags.push("Слова авторизации или раздач"); }
+        if (/(login|verify|gift|auth|steam|claim|wallet|bonus|trade)/i.test(raw)) { risk += 20; flags.push("Слова авторизации или раздач"); }
+
+        // Расширенный антифишинг на бесплатные хостинги
+        const freeHosts = [".pages.dev", ".vercel.app", ".github.io", ".onrender.com", ".repl.co", ".web.app", ".netlify.app", ".surge.sh"];
+        const suspiciousWords = ["login", "verify", "free", "gift", "steam", "telegra", "auth", "wallet", "claim", "support", "bonus", "trade"];
+        
+        let isFreeHost = freeHosts.some(fh => host.endsWith(fh));
+        if (isFreeHost) {
+          let hasSuspicious = suspiciousWords.some(w => host.includes(w));
+          if (hasSuspicious) {
+            risk += 65;
+            flags.push("Триггерные слова на бесплатном хостинге");
+          } else {
+            risk += 15;
+            flags.push("Используется бесплатный облачный хостинг");
+          }
+        }
+
+        // Защита от тайпосквоттинга
+        if (/st[eеaаrn]{2,3}m/.test(host) && !host.includes("steamcommunity.com") && !host.includes("steampowered.com")) {
+          risk += 50;
+          flags.push("Попытка подделки бренда (Steam)");
+        }
+        if (/t[eе]l[eе]g[rг][aа]m/.test(host) && !host.includes("telegram.org") && !host.includes("t.me")) {
+          risk += 50;
+          flags.push("Попытка подделки бренда (Telegram)");
+        }
 
         const dnsResp = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(host)}&type=A`);
         const dnsData = await dnsResp.json();
@@ -792,7 +829,7 @@
           flags.push("Домен не найден в DNS");
         }
 
-        const verdict = risk < 25 ? "Чисто" : (risk < 60 ? "Подозрительно" : "Похоже на фишинг");
+        const verdict = risk < 25 ? "Чисто" : (risk < 60 ? "Подозрительно" : "Опасно (фишинг / вредонос)");
         const lines = [
           `Вердикт: ${verdict} (${Math.min(risk, 100)}%)`,
           `Домен: ${host}`,
