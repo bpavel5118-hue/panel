@@ -8,407 +8,57 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/exifr/dist/full.umd.js"></script>
   <style>
-    :root {
-      --bg: #f2f2f7;
-      --card: #ffffff;
-      --text: #1c1c1e;
-      --muted: #8e8e93;
-      --accent: #2c2c2e;
-      --line: #e5e5ea;
-      --danger: #ff3b30;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-    }
-
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      padding: 14px 16px 92px;
-      min-height: 100vh;
-      user-select: none;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    .wrap {
-      max-width: 460px;
-      margin: 0 auto;
-    }
-
-    .seg-bar {
-      position: relative;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      background: #e3e3e8;
-      padding: 3px;
-      border-radius: 11px;
-      margin-bottom: 16px;
-    }
-
-    .seg-pill {
-      position: absolute;
-      top: 3px;
-      bottom: 3px;
-      left: 3px;
-      width: calc((100% - 6px) / 4);
-      background: var(--card);
-      border-radius: 8.5px;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08), 0 0.5px 1px rgba(0, 0, 0, 0.04);
-      transition: transform 0.24s cubic-bezier(0.32, 0.72, 0, 1);
-      z-index: 1;
-    }
-
-    .seg-btn {
-      position: relative;
-      z-index: 2;
-      border: none;
-      background: transparent;
-      padding: 7px 2px;
-      font-size: 13px;
-      font-weight: 500;
-      color: #636366;
-      cursor: pointer;
-      transition: color 0.2s ease;
-    }
-
-    .seg-btn.active {
-      color: var(--text);
-      font-weight: 600;
-    }
-
-    .view {
-      display: none;
-      animation: fade 0.18s ease-out;
-    }
-
-    .view.active {
-      display: block;
-    }
-
-    @keyframes fade {
-      from { opacity: 0; transform: translateY(3px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .card {
-      background: var(--card);
-      border-radius: 14px;
-      padding: 0 16px;
-      margin-bottom: 14px;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
-    }
-
-    .card-pad {
-      padding: 15px 16px;
-    }
-
-    .row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 0;
-      border-bottom: 0.5px solid var(--line);
-      gap: 12px;
-    }
-
-    .row:last-child {
-      border-bottom: none;
-    }
-
-    .row-no-border {
-      border-bottom: none;
-    }
-
-    .info h3 {
-      font-size: 15px;
-      font-weight: 500;
-      line-height: 1.25;
-      color: var(--text);
-    }
-
-    .info p {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 2px;
-      line-height: 1.3;
-    }
-
-    .switch {
-      position: relative;
-      width: 50px;
-      height: 30px;
-      flex-shrink: 0;
-    }
-
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      inset: 0;
-      background-color: #e5e5ea;
-      transition: background-color 0.22s ease;
-      border-radius: 30px;
-    }
-
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 26px;
-      width: 26px;
-      left: 2px;
-      bottom: 2px;
-      background-color: #ffffff;
-      transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1);
-      border-radius: 50%;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.08);
-    }
-
-    input:checked + .slider {
-      background-color: var(--accent);
-    }
-
-    input:checked + .slider:before {
-      transform: translateX(20px);
-    }
-
-    .secret-wrap {
-      max-height: 0;
-      overflow: hidden;
-      opacity: 0;
-      transition: max-height 0.24s ease, opacity 0.2s ease, padding 0.2s ease;
-      border-bottom: 0.5px solid var(--line);
-    }
-
-    .secret-wrap.open {
-      max-height: 64px;
-      opacity: 1;
-      padding-bottom: 12px;
-    }
-
-    .secret-wrap.last-secret {
-      border-bottom: none;
-    }
-
-    .input-box {
-      width: 100%;
-      padding: 9px 12px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: #f7f7fa;
-      font-size: 14px;
-      color: var(--text);
-      outline: none;
-      transition: border-color 0.18s ease, background-color 0.18s ease;
-    }
-
-    .input-box:focus {
-      background: #ffffff;
-      border-color: #8e8e93;
-    }
-
-    .input-error {
-      border-color: var(--danger) !important;
-      background: #fff5f5 !important;
-      animation: shake 0.32s ease;
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-5px); }
-      50% { transform: translateX(5px); }
-      75% { transform: translateX(-3px); }
-    }
-
-    .ch-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 11px 0;
-      border-bottom: 0.5px solid var(--line);
-    }
-
-    .ch-row:last-child {
-      border-bottom: none;
-    }
-
-    .ch-label {
-      font-size: 15px;
-      font-weight: 500;
-      color: var(--text);
-      flex-shrink: 0;
-    }
-
-    .ch-input {
-      width: 62%;
-      border: none;
-      background: transparent;
-      text-align: right;
-      font-size: 14px;
-      color: var(--text);
-      outline: none;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    }
-
-    .ch-input::placeholder {
-      color: #c7c7cc;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-
-    .btn-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .btn {
-      width: 100%;
-      padding: 11px 14px;
-      border: none;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: opacity 0.15s ease, transform 0.1s ease;
-      background: var(--accent);
-      color: #ffffff;
-    }
-
-    .btn:active {
-      transform: scale(0.985);
-      opacity: 0.9;
-    }
-
-    .btn-soft {
-      background: #e9e9ee;
-      color: var(--text);
-    }
-
-    .btn-clear {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 12px;
-      background: rgba(255, 59, 48, 0.1);
-      color: var(--danger);
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s ease;
-    }
-
-    .btn-clear:active {
-      background: rgba(255, 59, 48, 0.18);
-    }
-
-    .file-pick {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px dashed #c7c7cc;
-      border-radius: 10px;
-      padding: 14px 12px;
-      background: #f9f9fb;
-      cursor: pointer;
-      font-size: 13.5px;
-      font-weight: 500;
-      color: var(--text);
-      margin-top: 10px;
-      transition: background 0.15s ease;
-    }
-
-    .file-pick:active {
-      background: #efeff4;
-    }
-
-    .file-pick input {
-      display: none;
-    }
-
-    .out-box {
-      margin-top: 10px;
-      padding: 11px 12px;
-      border-radius: 10px;
-      background: #f4f4f8;
-      font-size: 12.5px;
-      line-height: 1.5;
-      color: var(--text);
-      white-space: pre-wrap;
-      word-break: break-word;
-      display: none;
-    }
-
-    .map-link {
-      display: inline-block;
-      margin-top: 8px;
-      padding: 6px 10px;
-      background: #e5e5ea;
-      color: var(--text);
-      border-radius: 7px;
-      text-decoration: none;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    .bottom-bar {
-      position: fixed;
-      bottom: 14px;
-      left: 16px;
-      right: 16px;
-      max-width: 460px;
-      margin: 0 auto;
-      z-index: 20;
-    }
-
-    .save-btn {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 13px;
-      background: var(--accent);
-      color: #ffffff;
-      font-size: 15px;
-      font-weight: 600;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
-      cursor: pointer;
-      transition: transform 0.1s ease, opacity 0.15s ease;
-    }
-
-    .save-btn:active {
-      transform: scale(0.99);
-      opacity: 0.92;
-    }
-
-    .toast {
-      position: fixed;
-      top: 12px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-80px);
-      background: rgba(28, 28, 30, 0.92);
-      color: #ffffff;
-      padding: 9px 16px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 500;
-      z-index: 100;
-      transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
-      pointer-events: none;
-      backdrop-filter: blur(8px);
-    }
-
-    .toast.show {
-      transform: translateX(-50%) translateY(0);
-    }
+    :root { --bg: #f2f2f7; --card: #ffffff; --text: #1c1c1e; --muted: #8e8e93; --accent: #2c2c2e; --line: #e5e5ea; --danger: #ff3b30; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 14px 16px 92px; min-height: 100vh; user-select: none; -webkit-font-smoothing: antialiased; }
+    .wrap { max-width: 460px; margin: 0 auto; }
+    .seg-bar { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); background: #e3e3e8; padding: 3px; border-radius: 11px; margin-bottom: 16px; }
+    .seg-pill { position: absolute; top: 3px; bottom: 3px; left: 3px; width: calc((100% - 6px) / 4); background: var(--card); border-radius: 8.5px; box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 0.5px 1px rgba(0,0,0,0.04); transition: transform 0.24s cubic-bezier(0.32, 0.72, 0, 1); z-index: 1; }
+    .seg-btn { position: relative; z-index: 2; border: none; background: transparent; padding: 7px 2px; font-size: 13px; font-weight: 500; color: #636366; cursor: pointer; transition: color 0.2s ease; }
+    .seg-btn.active { color: var(--text); font-weight: 600; }
+    .view { display: none; animation: fade 0.18s ease-out; }
+    .view.active { display: block; }
+    @keyframes fade { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+    .card { background: var(--card); border-radius: 14px; padding: 0 16px; margin-bottom: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+    .card-pad { padding: 15px 16px; }
+    .row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 0.5px solid var(--line); gap: 12px; }
+    .row:last-child, .row-no-border { border-bottom: none; }
+    .info h3 { font-size: 15px; font-weight: 500; line-height: 1.25; color: var(--text); }
+    .info p { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.3; }
+    .switch { position: relative; width: 50px; height: 30px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; inset: 0; background-color: #e5e5ea; transition: background-color 0.22s ease; border-radius: 30px; }
+    .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 2px; bottom: 2px; background-color: #ffffff; transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1); border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.15), 0 0 1px rgba(0,0,0,0.08); }
+    input:checked + .slider { background-color: var(--accent); }
+    input:checked + .slider:before { transform: translateX(20px); }
+    .secret-wrap { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.24s ease, opacity 0.2s ease, padding 0.2s ease; border-bottom: 0.5px solid var(--line); }
+    .secret-wrap.open { max-height: 64px; opacity: 1; padding-bottom: 12px; }
+    .secret-wrap.last-secret { border-bottom: none; }
+    .input-box { width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; background: #f7f7fa; font-size: 14px; color: var(--text); outline: none; transition: border-color 0.18s ease, background-color 0.18s ease; }
+    .input-box:focus { background: #ffffff; border-color: #8e8e93; }
+    .input-error { border-color: var(--danger) !important; background: #fff5f5 !important; animation: shake 0.32s ease; }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-3px); } }
+    .ch-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 0.5px solid var(--line); }
+    .ch-row:last-child { border-bottom: none; }
+    .ch-label { font-size: 15px; font-weight: 500; color: var(--text); flex-shrink: 0; }
+    .ch-input { width: 62%; border: none; background: transparent; text-align: right; font-size: 14px; color: var(--text); outline: none; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .ch-input::placeholder { color: #c7c7cc; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+    .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+    .btn { width: 100%; padding: 11px 14px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.15s ease, transform 0.1s ease; background: var(--accent); color: #ffffff; }
+    .btn:active { transform: scale(0.985); opacity: 0.9; }
+    .btn-soft { background: #e9e9ee; color: var(--text); }
+    .btn-clear { width: 100%; padding: 12px; border: none; border-radius: 12px; background: rgba(255, 59, 48, 0.1); color: var(--danger); font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s ease; }
+    .btn-clear:active { background: rgba(255, 59, 48, 0.18); }
+    .file-pick { display: flex; align-items: center; justify-content: center; border: 1px dashed #c7c7cc; border-radius: 10px; padding: 14px 12px; background: #f9f9fb; cursor: pointer; font-size: 13.5px; font-weight: 500; color: var(--text); margin-top: 10px; transition: background 0.15s ease; }
+    .file-pick:active { background: #efeff4; }
+    .file-pick input { display: none; }
+    .out-box { margin-top: 10px; padding: 11px 12px; border-radius: 10px; background: #f4f4f8; font-size: 12.5px; line-height: 1.5; color: var(--text); white-space: pre-wrap; word-break: break-word; display: none; }
+    .map-link { display: inline-block; margin-top: 8px; padding: 6px 10px; background: #e5e5ea; color: var(--text); border-radius: 7px; text-decoration: none; font-size: 12px; font-weight: 600; }
+    .bottom-bar { position: fixed; bottom: 14px; left: 16px; right: 16px; max-width: 460px; margin: 0 auto; z-index: 20; }
+    .save-btn { width: 100%; padding: 14px; border: none; border-radius: 13px; background: var(--accent); color: #ffffff; font-size: 15px; font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,0.12); cursor: pointer; transition: transform 0.1s ease, opacity 0.15s ease; }
+    .save-btn:active { transform: scale(0.99); opacity: 0.92; }
+    .toast { position: fixed; top: 12px; left: 50%; transform: translateX(-50%) translateY(-80px); background: rgba(28, 28, 30, 0.92); color: #ffffff; padding: 9px 16px; border-radius: 20px; font-size: 13px; font-weight: 500; z-index: 100; transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1); pointer-events: none; backdrop-filter: blur(8px); }
+    .toast.show { transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
@@ -444,69 +94,28 @@
     <div id="main" class="view active">
       <div class="card">
         <div class="row">
-          <div class="info">
-            <h3>Пауза</h3>
-            <p>Временно не следить за чатами</p>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="paused">
-            <span class="slider"></span>
-          </label>
+          <div class="info"><h3>Пауза</h3><p>Временно не следить за чатами</p></div>
+          <label class="switch"><input type="checkbox" id="paused"><span class="slider"></span></label>
         </div>
-
         <div class="row">
-          <div class="info">
-            <h3>Удаленные</h3>
-            <p>Присылать стертые сообщения</p>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="save_deleted" checked>
-            <span class="slider"></span>
-          </label>
+          <div class="info"><h3>Удаленные</h3><p>Присылать стертые сообщения</p></div>
+          <label class="switch"><input type="checkbox" id="save_deleted" checked><span class="slider"></span></label>
         </div>
-
         <div class="row">
-          <div class="info">
-            <h3>Измененные</h3>
-            <p>Показывать текст до и после правки</p>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="save_edited" checked>
-            <span class="slider"></span>
-          </label>
+          <div class="info"><h3>Измененные</h3><p>Показывать текст до и после правки</p></div>
+          <label class="switch"><input type="checkbox" id="save_edited" checked><span class="slider"></span></label>
         </div>
-
         <div class="row">
-          <div class="info">
-            <h3>Голосовые и кружки</h3>
-            <p>Сохранять войсы и видеосообщения</p>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="save_voice_circles" checked>
-            <span class="slider"></span>
-          </label>
+          <div class="info"><h3>Голосовые и кружки</h3><p>Сохранять войсы и видеосообщения</p></div>
+          <label class="switch"><input type="checkbox" id="save_voice_circles" checked><span class="slider"></span></label>
         </div>
-
         <div class="row">
-          <div class="info">
-            <h3>Фото и видео</h3>
-            <p>Сохранять обычные медиафайлы</p>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="save_photo_video" checked>
-            <span class="slider"></span>
-          </label>
+          <div class="info"><h3>Фото и видео</h3><p>Сохранять обычные медиафайлы</p></div>
+          <label class="switch"><input type="checkbox" id="save_photo_video" checked><span class="slider"></span></label>
         </div>
-
         <div class="row">
-          <div class="info">
-            <h3>Сгорающие</h3>
-            <p>Фото и видео с таймером по реплаю</p>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="save_protected" checked>
-            <span class="slider"></span>
-          </label>
+          <div class="info"><h3>Сгорающие</h3><p>Фото и видео с таймером по реплаю</p></div>
+          <label class="switch"><input type="checkbox" id="save_protected" checked><span class="slider"></span></label>
         </div>
       </div>
     </div>
@@ -514,59 +123,26 @@
     <div id="modes" class="view">
       <div class="card">
         <div class="row" id="stealth_row">
-          <div class="info">
-            <h3>Инкогнито</h3>
-            <p>Не сохранять мои сообщения у других</p>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="stealth_mode" onchange="toggleSecretInputs()">
-            <span class="slider"></span>
-          </label>
+          <div class="info"><h3>Инкогнито</h3><p>Не сохранять мои сообщения у других</p></div>
+          <label class="switch"><input type="checkbox" id="stealth_mode" onchange="toggleSecretInputs()"><span class="slider"></span></label>
         </div>
-        <div id="stealth_wrap" class="secret-wrap">
-          <input type="password" id="stealth_code" class="input-box" placeholder="Пароль">
-        </div>
-
+        <div id="stealth_wrap" class="secret-wrap"><input type="password" id="stealth_code" class="input-box" placeholder="Пароль"></div>
         <div class="row row-no-border" id="ai_row">
-          <div class="info">
-            <h3>Автоответчик</h3>
-            <p>Отвечать в личке за меня</p>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="ai_mode" onchange="toggleSecretInputs()">
-            <span class="slider"></span>
-          </label>
+          <div class="info"><h3>Автоответчик</h3><p>Отвечать в личке за меня</p></div>
+          <label class="switch"><input type="checkbox" id="ai_mode" onchange="toggleSecretInputs()"><span class="slider"></span></label>
         </div>
-        <div id="ai_wrap" class="secret-wrap last-secret">
-          <input type="password" id="ai_code" class="input-box" placeholder="Ключ">
-        </div>
+        <div id="ai_wrap" class="secret-wrap last-secret"><input type="password" id="ai_code" class="input-box" placeholder="Ключ"></div>
       </div>
-
       <button class="btn-clear" onclick="clearBotCache()">Очистить кэш</button>
     </div>
 
     <div id="channels" class="view">
       <div class="card">
-        <div class="ch-row">
-          <span class="ch-label">Текст</span>
-          <input type="text" id="ch_text" class="ch-input" placeholder="В личку">
-        </div>
-        <div class="ch-row">
-          <span class="ch-label">Фото</span>
-          <input type="text" id="ch_photo" class="ch-input" placeholder="В личку">
-        </div>
-        <div class="ch-row">
-          <span class="ch-label">Видео</span>
-          <input type="text" id="ch_video" class="ch-input" placeholder="В личку">
-        </div>
-        <div class="ch-row">
-          <span class="ch-label">Войсы</span>
-          <input type="text" id="ch_voice" class="ch-input" placeholder="В личку">
-        </div>
-        <div class="ch-row">
-          <span class="ch-label">Кружки</span>
-          <input type="text" id="ch_video_note" class="ch-input" placeholder="В личку">
-        </div>
+        <div class="ch-row"><span class="ch-label">Текст</span><input type="text" id="ch_text" class="ch-input" placeholder="В личку"></div>
+        <div class="ch-row"><span class="ch-label">Фото</span><input type="text" id="ch_photo" class="ch-input" placeholder="В личку"></div>
+        <div class="ch-row"><span class="ch-label">Видео</span><input type="text" id="ch_video" class="ch-input" placeholder="В личку"></div>
+        <div class="ch-row"><span class="ch-label">Войсы</span><input type="text" id="ch_voice" class="ch-input" placeholder="В личку"></div>
+        <div class="ch-row"><span class="ch-label">Кружки</span><input type="text" id="ch_video_note" class="ch-input" placeholder="В личку"></div>
       </div>
     </div>
 
@@ -574,20 +150,20 @@
       <div class="card card-pad">
         <div class="info" style="margin-bottom: 10px;">
           <h3>Проверка ссылки</h3>
-          <p>Домен, IP, хостинг и редиректы</p>
+          <p>Домен, IP, хостинг, ИИ-анализ</p>
         </div>
         <input type="text" id="scan_url_input" class="input-box" placeholder="https://...">
         <div class="btn-row">
-          <button class="btn btn-soft" onclick="quickScanUrl()">Тут</button>
-          <button class="btn" onclick="deepScanViaBot()">В чат</button>
+          <button class="btn btn-soft" onclick="quickScanUrl()">Поверхностно</button>
+          <button class="btn" onclick="deepScanViaBot()">ИИ-анализ (в чат)</button>
         </div>
         <div id="url_result" class="out-box"></div>
       </div>
 
       <div class="card card-pad">
         <div class="info">
-          <h3>Метаданные фото</h3>
-          <p>Модель телефона, дата и координаты из файла</p>
+          <h3>Глубокий анализ фото (EXIF)</h3>
+          <p>Детальные настройки камеры и GPS</p>
         </div>
         <label class="file-pick">
           <span id="file_label">Выбрать оригинал фото</span>
@@ -595,14 +171,12 @@
         </label>
         <div id="exif_result" class="out-box"></div>
         <div id="map_holder"></div>
-        <button id="send_exif_btn" class="btn btn-soft" style="display:none; margin-top:8px;" onclick="sendExifToBot()">Отправить в чат</button>
+        <button id="send_exif_btn" class="btn btn-soft" style="display:none; margin-top:8px;" onclick="sendExifToBot()">Отправить отчет в чат</button>
       </div>
     </div>
   </div>
 
-  <div class="bottom-bar" id="save_bar">
-    <button class="save-btn" onclick="saveSettings()">Сохранить</button>
-  </div>
+  <div class="bottom-bar" id="save_bar"><button class="save-btn" onclick="saveSettings()">Сохранить</button></div>
 
   <script>
     const storageKey = "pashka_panel_cfg";
@@ -610,72 +184,36 @@
     let unlockedStealth = false;
     let unlockedAi = false;
 
-    const flagIds = [
-      "paused", "save_deleted", "save_edited",
-      "save_voice_circles", "save_photo_video", "save_protected",
-      "stealth_mode", "ai_mode"
-    ];
+    const flagIds = ["paused", "save_deleted", "save_edited", "save_voice_circles", "save_photo_video", "save_protected", "stealth_mode", "ai_mode"];
 
     function showToast(msg) {
-      const t = document.getElementById("toast");
-      t.textContent = msg;
-      t.classList.add("show");
-      clearTimeout(window._toastTimer);
-      window._toastTimer = setTimeout(() => t.classList.remove("show"), 2000);
+      const t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show");
+      clearTimeout(window._toastTimer); window._toastTimer = setTimeout(() => t.classList.remove("show"), 2000);
     }
 
     function markInvalid(el, hint) {
-      el.classList.remove("input-error");
-      void el.offsetWidth;
-      el.classList.add("input-error");
-      showToast(hint);
+      el.classList.remove("input-error"); void el.offsetWidth; el.classList.add("input-error"); showToast(hint);
       setTimeout(() => el.classList.remove("input-error"), 1200);
     }
 
     function toggleSecretInputs() {
-      const stOn = document.getElementById("stealth_mode").checked;
-      const aiOn = document.getElementById("ai_mode").checked;
-      const stWrap = document.getElementById("stealth_wrap");
-      const aiWrap = document.getElementById("ai_wrap");
+      const stOn = document.getElementById("stealth_mode").checked; const aiOn = document.getElementById("ai_mode").checked;
+      const stWrap = document.getElementById("stealth_wrap"); const aiWrap = document.getElementById("ai_wrap");
       const stRow = document.getElementById("stealth_row");
 
-      if (stOn && !unlockedStealth) {
-        stWrap.classList.add("open");
-        stRow.style.borderBottom = "none";
-      } else {
-        stWrap.classList.remove("open");
-        stRow.style.borderBottom = "0.5px solid var(--line)";
-      }
+      if (stOn && !unlockedStealth) { stWrap.classList.add("open"); stRow.style.borderBottom = "none"; } 
+      else { stWrap.classList.remove("open"); stRow.style.borderBottom = "0.5px solid var(--line)"; }
 
-      if (aiOn && !unlockedAi) {
-        aiWrap.classList.add("open");
-      } else {
-        aiWrap.classList.remove("open");
-      }
+      if (aiOn && !unlockedAi) aiWrap.classList.add("open"); else aiWrap.classList.remove("open");
     }
 
     function loadSettings() {
       try {
-        const raw = localStorage.getItem(storageKey);
-        if (!raw) return;
+        const raw = localStorage.getItem(storageKey); if (!raw) return;
         const data = JSON.parse(raw);
-
-        flagIds.forEach(k => {
-          if (typeof data[k] === "boolean" && document.getElementById(k)) {
-            document.getElementById(k).checked = data[k];
-          }
-        });
-
-        if (data.stealth_mode) unlockedStealth = true;
-        if (data.ai_mode) unlockedAi = true;
-
-        if (data.channels) {
-          ["text", "photo", "video", "voice", "video_note"].forEach(m => {
-            if (data.channels[m] && document.getElementById("ch_" + m)) {
-              document.getElementById("ch_" + m).value = data.channels[m];
-            }
-          });
-        }
+        flagIds.forEach(k => { if (typeof data[k] === "boolean" && document.getElementById(k)) document.getElementById(k).checked = data[k]; });
+        if (data.stealth_mode) unlockedStealth = true; if (data.ai_mode) unlockedAi = true;
+        if (data.channels) { ["text", "photo", "video", "voice", "video_note"].forEach(m => { if (data.channels[m] && document.getElementById("ch_" + m)) document.getElementById("ch_" + m).value = data.channels[m]; }); }
         toggleSecretInputs();
       } catch (e) {}
     }
@@ -683,178 +221,118 @@
     function switchTab(id, idx, btn) {
       document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
       document.querySelectorAll(".seg-btn").forEach(b => b.classList.remove("active"));
-      document.getElementById(id).classList.add("active");
-      btn.classList.add("active");
-
-      const pill = document.getElementById("seg_pill");
-      pill.style.transform = `translateX(${idx * 100}%)`;
-
+      document.getElementById(id).classList.add("active"); btn.classList.add("active");
+      document.getElementById("seg_pill").style.transform = `translateX(${idx * 100}%)`;
       document.getElementById("save_bar").style.display = (id === "tools") ? "none" : "block";
     }
 
     function sendPayload(payload, toastText) {
-      if (!tg) {
-        showToast("Открой панель внутри Telegram");
-        return;
-      }
+      if (!tg) { showToast("Открой панель внутри Telegram"); return; }
       showToast(toastText || "Отправлено");
-      try {
-        tg.sendData(JSON.stringify(payload));
-      } catch (e) {
-        showToast("Открой через кнопку Mini app внизу");
-      }
+      try { tg.sendData(JSON.stringify(payload)); } catch (e) { showToast("Открой через кнопку Mini app внизу"); }
     }
 
     function saveSettings() {
-      const stChecked = document.getElementById("stealth_mode").checked;
-      const aiChecked = document.getElementById("ai_mode").checked;
-      const stInput = document.getElementById("stealth_code");
-      const aiInput = document.getElementById("ai_code");
+      const stChecked = document.getElementById("stealth_mode").checked; const aiChecked = document.getElementById("ai_mode").checked;
+      const stInput = document.getElementById("stealth_code"); const aiInput = document.getElementById("ai_code");
 
-      if (stChecked && !unlockedStealth) {
-        if (stInput.value.trim() !== "killme3197") {
-          markInvalid(stInput, "Неверный пароль инкогнито");
-          return;
-        }
-        unlockedStealth = true;
-      }
+      if (stChecked && !unlockedStealth) { if (stInput.value.trim() !== "killme3197") { markInvalid(stInput, "Неверный пароль"); return; } unlockedStealth = true; }
       if (!stChecked) unlockedStealth = false;
-
-      if (aiChecked && !unlockedAi) {
-        if (aiInput.value.trim() !== "aime9713") {
-          markInvalid(aiInput, "Неверный ключ автоответчика");
-          return;
-        }
-        unlockedAi = true;
-      }
+      if (aiChecked && !unlockedAi) { if (aiInput.value.trim() !== "aime9713") { markInvalid(aiInput, "Неверный ключ"); return; } unlockedAi = true; }
       if (!aiChecked) unlockedAi = false;
-
       toggleSecretInputs();
 
       const payload = {
-        action: "save_settings",
-        paused: document.getElementById("paused").checked,
-        save_deleted: document.getElementById("save_deleted").checked,
-        save_edited: document.getElementById("save_edited").checked,
-        save_voice_circles: document.getElementById("save_voice_circles").checked,
-        save_photo_video: document.getElementById("save_photo_video").checked,
-        save_protected: document.getElementById("save_protected").checked,
-        stealth_mode: stChecked,
-        ai_mode: aiChecked,
+        action: "save_settings", paused: document.getElementById("paused").checked, save_deleted: document.getElementById("save_deleted").checked,
+        save_edited: document.getElementById("save_edited").checked, save_voice_circles: document.getElementById("save_voice_circles").checked,
+        save_photo_video: document.getElementById("save_photo_video").checked, save_protected: document.getElementById("save_protected").checked,
+        stealth_mode: stChecked, ai_mode: aiChecked,
         channels: {
-          text: document.getElementById("ch_text").value.trim() || null,
-          photo: document.getElementById("ch_photo").value.trim() || null,
-          video: document.getElementById("ch_video").value.trim() || null,
-          voice: document.getElementById("ch_voice").value.trim() || null,
+          text: document.getElementById("ch_text").value.trim() || null, photo: document.getElementById("ch_photo").value.trim() || null,
+          video: document.getElementById("ch_video").value.trim() || null, voice: document.getElementById("ch_voice").value.trim() || null,
           video_note: document.getElementById("ch_video_note").value.trim() || null
         }
       };
-
-      localStorage.setItem(storageKey, JSON.stringify(payload));
-      sendPayload(payload, "Настройки сохранены");
+      localStorage.setItem(storageKey, JSON.stringify(payload)); sendPayload(payload, "Настройки сохранены");
     }
 
-    function clearBotCache() {
-      sendPayload({ action: "clear_cache" }, "Запрос на очистку отправлен");
+    function clearBotCache() { sendPayload({ action: "clear_cache" }, "Запрос на очистку отправлен"); }
+
+    // Вычисление энтропии Шеннона для домена (определяет сгенерированные/рандомные имена)
+    function calcEntropy(str) {
+      const len = str.length;
+      const frequencies = Array.from(str).reduce((freq, c) => (freq[c] = (freq[c] || 0) + 1, freq), {});
+      return Object.values(frequencies).reduce((sum, f) => sum - f/len * Math.log2(f/len), 0);
     }
 
     async function quickScanUrl() {
-      const input = document.getElementById("scan_url_input");
-      let raw = input.value.trim();
+      const input = document.getElementById("scan_url_input"); let raw = input.value.trim();
       const box = document.getElementById("url_result");
-
-      if (!raw) {
-        markInvalid(input, "Введи ссылку");
-        return;
-      }
-
-      box.style.display = "block";
-      box.textContent = "Проверяю...";
+      if (!raw) { markInvalid(input, "Введи ссылку"); return; }
+      box.style.display = "block"; box.textContent = "Проверяю...";
 
       try {
-        if (!raw.startsWith("http://") && !raw.startsWith("https://")) {
-          raw = "https://" + raw;
-        }
-        const u = new URL(raw);
-        const host = u.hostname.toLowerCase();
-        let risk = 0;
-        let flags = [];
+        if (!raw.startsWith("http://") && !raw.startsWith("https://")) raw = "https://" + raw;
+        const u = new URL(raw); const host = u.hostname.toLowerCase();
+        let risk = 0; let flags = [];
 
-        if (host.includes("xn--")) { risk += 45; flags.push("Punycode (подмена букв)"); }
+        // Базовые угрозы
+        if (host.includes("xn--")) { risk += 45; flags.push("Punycode (визуальная подмена)"); }
         if (u.protocol === "http:") { risk += 20; flags.push("Без шифрования (HTTP)"); }
-        if (/\.(xyz|top|buzz|tk|ml|cf|gq|click|loan)$/i.test(host)) { risk += 25; flags.push("Дешевая доменная зона"); }
-        if (/(login|verify|gift|auth|steam|claim|wallet|bonus|trade)/i.test(raw)) { risk += 20; flags.push("Слова авторизации или раздач"); }
-
-        // Расширенный антифишинг на бесплатные хостинги
-        const freeHosts = [".pages.dev", ".vercel.app", ".github.io", ".onrender.com", ".repl.co", ".web.app", ".netlify.app", ".surge.sh"];
-        const suspiciousWords = ["login", "verify", "free", "gift", "steam", "telegra", "auth", "wallet", "claim", "support", "bonus", "trade"];
         
-        let isFreeHost = freeHosts.some(fh => host.endsWith(fh));
-        if (isFreeHost) {
-          let hasSuspicious = suspiciousWords.some(w => host.includes(w));
-          if (hasSuspicious) {
-            risk += 65;
-            flags.push("Триггерные слова на бесплатном хостинге");
-          } else {
-            risk += 15;
-            flags.push("Используется бесплатный облачный хостинг");
-          }
-        }
+        // Сложные эвристики
+        const entropy = calcEntropy(host.replace(/\.[a-z]+$/, ''));
+        if (entropy > 3.8) { risk += 30; flags.push("Высокая энтропия (возможно автогенерация DGA)"); }
+        if ((host.match(/\./g) || []).length > 3) { risk += 20; flags.push("Слишком много поддоменов"); }
 
-        // Защита от тайпосквоттинга
-        if (/st[eеaаrn]{2,3}m/.test(host) && !host.includes("steamcommunity.com") && !host.includes("steampowered.com")) {
-          risk += 50;
-          flags.push("Попытка подделки бренда (Steam)");
-        }
-        if (/t[eе]l[eе]g[rг][aа]m/.test(host) && !host.includes("telegram.org") && !host.includes("t.me")) {
-          risk += 50;
-          flags.push("Попытка подделки бренда (Telegram)");
+        // Токены обмана
+        if (/(login|verify|gift|auth|steam|claim|wallet|bonus|trade|security|update)/i.test(raw)) { risk += 20; flags.push("Триггеры социальной инженерии"); }
+        if (/\.(xyz|top|buzz|tk|ml|cf|gq|click|loan|rest|work|cam)$/i.test(host)) { risk += 30; flags.push("Подозрительная доменная зона (часто используется спамерами)"); }
+
+        // Тайпосквоттинг и бренды
+        if (/st[eеaаrn]{2,3}m/.test(host) && !host.endsWith("steamcommunity.com") && !host.endsWith("steampowered.com")) { risk += 50; flags.push("Тайпосквоттинг (Steam)"); }
+        if (/t[eе]l[eе]g[rг][aа]m/.test(host) && !host.endsWith("telegram.org") && !host.endsWith("t.me")) { risk += 50; flags.push("Тайпосквоттинг (Telegram)"); }
+        if (/y[aа]nd[eе]x/.test(host) && !host.endsWith("yandex.ru") && !host.endsWith("ya.ru")) { risk += 50; flags.push("Тайпосквоттинг (Yandex)"); }
+
+        // Облачные абузы
+        const freeHosts = [".pages.dev", ".vercel.app", ".github.io", ".onrender.com", ".repl.co", ".web.app", ".netlify.app", ".surge.sh", ".firebaseapp.com"];
+        if (freeHosts.some(fh => host.endsWith(fh))) {
+          if (flags.some(f => f.includes("социальной инженерии") || f.includes("Тайпосквоттинг"))) {
+            risk += 65; flags.push("Критично: маскировка на бесплатном облаке");
+          } else {
+            risk += 15; flags.push("Бесплатный облачный хостинг");
+          }
         }
 
         const dnsResp = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(host)}&type=A`);
         const dnsData = await dnsResp.json();
         const ip = (dnsData.Answer && dnsData.Answer.length) ? dnsData.Answer[dnsData.Answer.length - 1].data : null;
-
         let server = "Не определен";
         if (ip) {
-          const geoResp = await fetch(`https://ipwho.is/${ip}`);
-          const geo = await geoResp.json();
-          if (geo && geo.success !== false) {
-            const loc = [geo.country, geo.city].filter(Boolean).join(", ");
-            const isp = geo.connection ? geo.connection.isp : "";
-            server = [loc, isp].filter(Boolean).join(" · ");
-          }
-        } else {
-          risk += 35;
-          flags.push("Домен не найден в DNS");
-        }
+          const geoResp = await fetch(`https://ipwho.is/${ip}`); const geo = await geoResp.json();
+          if (geo && geo.success !== false) server = [geo.country, geo.city, geo.connection ? geo.connection.isp : ""].filter(Boolean).join(" · ");
+        } else { risk += 35; flags.push("DNS запись не найдена"); }
 
-        const verdict = risk < 25 ? "Чисто" : (risk < 60 ? "Подозрительно" : "Опасно (фишинг / вредонос)");
+        const verdict = risk < 25 ? "Чисто" : (risk < 60 ? "Подозрительно" : "ОПАСНО (Возможен фишинг)");
         const lines = [
-          `Вердикт: ${verdict} (${Math.min(risk, 100)}%)`,
-          `Домен: ${host}`,
+          `Вердикт: ${verdict} (${Math.min(risk, 100)}% риска)`,
+          `Домен: ${host} (Энтропия: ${entropy.toFixed(2)})`,
           `IP: ${ip || "нет"}`,
-          `Хостинг: ${server}`
+          `Сервер: ${server}`
         ];
-        if (flags.length) {
-          lines.push(`Детали: ${flags.join(", ")}`);
-        }
+        if (flags.length) lines.push(`\nФлаги безопасности:\n- ${flags.join("\n- ")}`);
+        
         box.textContent = lines.join("\n");
-      } catch (e) {
-        box.textContent = "Некорректный адрес ссылки.";
-      }
+      } catch (e) { box.textContent = "Некорректная ссылка."; }
     }
 
     function deepScanViaBot() {
-      const input = document.getElementById("scan_url_input");
-      const url = input.value.trim();
-      if (!url) {
-        markInvalid(input, "Введи ссылку");
-        return;
-      }
-      sendPayload({ action: "scan_url", url: url }, "Отправлено боту на проверку");
+      const input = document.getElementById("scan_url_input"); const url = input.value.trim();
+      if (!url) { markInvalid(input, "Введи ссылку"); return; }
+      sendPayload({ action: "scan_url", url: url }, "Отправлено ИИ-аналитику в чат");
     }
 
+    // Прокачанный парсер EXIF (все доступные RAW-данные)
     async function parseExif(input) {
       const file = input.files[0];
       const box = document.getElementById("exif_result");
@@ -863,33 +341,57 @@
       if (!file) return;
 
       document.getElementById("file_label").textContent = file.name;
-      box.style.display = "block";
-      box.textContent = "Читаю файл...";
-      mapHolder.innerHTML = "";
+      box.style.display = "block"; box.textContent = "Извлекаю массив данных..."; mapHolder.innerHTML = "";
 
       try {
-        const data = await exifr.parse(file, true);
-        const lines = [
-          `Файл: ${file.name} (${(file.size / 1024).toFixed(1)} КБ)`
-        ];
+        // Запрашиваем ВСЕ секции: TIFF, EXIF, GPS, IPTC, XMP
+        const data = await exifr.parse(file, {tiff: true, exif: true, gps: true, iptc: true, xmp: true});
+        const lines = [`📷 Файл: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} МБ)`];
 
-        if (!data) {
-          lines.push("Метаданные стерты или отсутствуют.");
+        if (!data || Object.keys(data).length === 0) {
+          lines.push("Метаданные стерты или отсутствуют. (Возможно, файл прошел через мессенджер/соцсеть)");
         } else {
+          // Устройство
           if (data.Make || data.Model) lines.push(`Устройство: ${[data.Make, data.Model].filter(Boolean).join(" ")}`);
-          if (data.Software) lines.push(`Система: ${data.Software}`);
-          if (data.DateTimeOriginal) lines.push(`Снято: ${new Date(data.DateTimeOriginal).toLocaleString("ru-RU")}`);
-          if (data.ExifImageWidth && data.ExifImageHeight) lines.push(`Размер: ${data.ExifImageWidth}×${data.ExifImageHeight}`);
-          if (data.LensModel) lines.push(`Камера: ${data.LensModel}`);
+          if (data.LensModel) lines.push(`Объектив: ${data.LensModel}`);
+          if (data.Software) {
+            lines.push(`Прошивка/Софт: ${data.Software}`);
+            if (/photoshop|lightroom|snapseed|vsco|picsart/i.test(data.Software)) {
+              lines.push(`Внимание: Фото было обработано в графическом редакторе.`);
+            }
+          }
 
+          // Технические параметры съемки (Экспозиция)
+          const techParams = [];
+          if (data.ISO) techParams.push(`ISO ${data.ISO}`);
+          if (data.ExposureTime) techParams.push(`${data.ExposureTime >= 1 ? data.ExposureTime : '1/' + Math.round(1/data.ExposureTime)}s`);
+          if (data.FNumber) techParams.push(`f/${data.FNumber}`);
+          if (data.FocalLength) techParams.push(`${data.FocalLength}mm`);
+          if (techParams.length > 0) lines.push(`Параметры: ${techParams.join(" | ")}`);
+
+          if (data.Flash !== undefined) {
+            const flashFired = (data.Flash & 1) !== 0; // Бит 0 указывает на срабатывание
+            lines.push(`Вспышка: ${flashFired ? "Сработала" : "Без вспышки"}`);
+          }
+
+          // Даты
+          if (data.DateTimeOriginal) {
+            lines.push(`Дата съемки: ${new Date(data.DateTimeOriginal).toLocaleString("ru-RU")}`);
+          } else if (data.CreateDate) {
+            lines.push(`Дата создания: ${new Date(data.CreateDate).toLocaleString("ru-RU")}`);
+          }
+          
+          if (data.ExifImageWidth && data.ExifImageHeight) lines.push(`📐 Исходный размер: ${data.ExifImageWidth}×${data.ExifImageHeight} px`);
+
+          // GPS
           if (data.latitude && data.longitude) {
-            const lat = data.latitude.toFixed(6);
-            const lon = data.longitude.toFixed(6);
-            const mapUrl = `https://maps.google.com/?q=${lat},${lon}`;
-            lines.push(`Координаты: ${lat}, ${lon}`);
-            mapHolder.innerHTML = `<a href="${mapUrl}" target="_blank" class="map-link">Открыть точку на карте</a>`;
+            const lat = data.latitude.toFixed(6); const lon = data.longitude.toFixed(6);
+            lines.push(`GPS Координаты: ${lat}, ${lon}`);
+            const altitude = data.GPSAltitude ? ` (Высота: ${Math.round(data.GPSAltitude)}м)` : "";
+            if (altitude) lines.push(`${altitude}`);
+            mapHolder.innerHTML = `<a href="https://maps.google.com/?q=${lat},${lon}" target="_blank" class="map-link">Открыть на Google Картах</a>`;
           } else {
-            lines.push("Геолокация: нет в файле");
+            lines.push("Геолокация: Отсутствует");
           }
         }
 
@@ -897,14 +399,11 @@
         box.textContent = lastExifReport;
         btn.style.display = "block";
       } catch (e) {
-        box.textContent = "Не удалось прочитать метаданные из файла.";
+        box.textContent = "Не удалось прочитать EXIF. Формат не поддерживается.";
       }
     }
 
-    function sendExifToBot() {
-      if (!lastExifReport) return;
-      sendPayload({ action: "exif_report", report: lastExifReport }, "Отчет отправлен в чат");
-    }
+    function sendExifToBot() { if (!lastExifReport) return; sendPayload({ action: "exif_report", report: lastExifReport }, "Отчет отправлен"); }
 
     loadSettings();
   </script>
