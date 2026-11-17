@@ -8,57 +8,404 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/exifr/dist/full.umd.js"></script>
   <style>
-    :root { --bg: #f2f2f7; --card: #ffffff; --text: #1c1c1e; --muted: #8e8e93; --accent: #2c2c2e; --line: #e5e5ea; --danger: #ff3b30; }
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding: 14px 16px 92px; min-height: 100vh; user-select: none; -webkit-font-smoothing: antialiased; }
-    .wrap { max-width: 460px; margin: 0 auto; }
-    .seg-bar { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); background: #e3e3e8; padding: 3px; border-radius: 11px; margin-bottom: 16px; }
-    .seg-pill { position: absolute; top: 3px; bottom: 3px; left: 3px; width: calc((100% - 6px) / 4); background: var(--card); border-radius: 8.5px; box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 0.5px 1px rgba(0,0,0,0.04); transition: transform 0.24s cubic-bezier(0.32, 0.72, 0, 1); z-index: 1; }
-    .seg-btn { position: relative; z-index: 2; border: none; background: transparent; padding: 7px 2px; font-size: 13px; font-weight: 500; color: #636366; cursor: pointer; transition: color 0.2s ease; }
-    .seg-btn.active { color: var(--text); font-weight: 600; }
-    .view { display: none; animation: fade 0.18s ease-out; }
-    .view.active { display: block; }
-    @keyframes fade { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
-    .card { background: var(--card); border-radius: 14px; padding: 0 16px; margin-bottom: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
-    .card-pad { padding: 15px 16px; }
-    .row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 0.5px solid var(--line); gap: 12px; }
-    .row:last-child, .row-no-border { border-bottom: none; }
-    .info h3 { font-size: 15px; font-weight: 500; line-height: 1.25; color: var(--text); }
-    .info p { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.3; }
-    .switch { position: relative; width: 50px; height: 30px; flex-shrink: 0; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; inset: 0; background-color: #e5e5ea; transition: background-color 0.22s ease; border-radius: 30px; }
-    .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 2px; bottom: 2px; background-color: #ffffff; transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1); border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.15), 0 0 1px rgba(0,0,0,0.08); }
-    input:checked + .slider { background-color: var(--accent); }
-    input:checked + .slider:before { transform: translateX(20px); }
-    .secret-wrap { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.24s ease, opacity 0.2s ease, padding 0.2s ease; border-bottom: 0.5px solid var(--line); }
-    .secret-wrap.open { max-height: 64px; opacity: 1; padding-bottom: 12px; }
-    .secret-wrap.last-secret { border-bottom: none; }
-    .input-box { width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; background: #f7f7fa; font-size: 14px; color: var(--text); outline: none; transition: border-color 0.18s ease, background-color 0.18s ease; }
-    .input-box:focus { background: #ffffff; border-color: #8e8e93; }
-    .input-error { border-color: var(--danger) !important; background: #fff5f5 !important; animation: shake 0.32s ease; }
-    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-3px); } }
-    .ch-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 0.5px solid var(--line); }
-    .ch-row:last-child { border-bottom: none; }
-    .ch-label { font-size: 15px; font-weight: 500; color: var(--text); flex-shrink: 0; }
-    .ch-input { width: 62%; border: none; background: transparent; text-align: right; font-size: 14px; color: var(--text); outline: none; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-    .ch-input::placeholder { color: #c7c7cc; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
-    .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-    .btn { width: 100%; padding: 11px 14px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.15s ease, transform 0.1s ease; background: var(--accent); color: #ffffff; }
-    .btn:active { transform: scale(0.985); opacity: 0.9; }
-    .btn-soft { background: #e9e9ee; color: var(--text); }
-    .btn-clear { width: 100%; padding: 12px; border: none; border-radius: 12px; background: rgba(255, 59, 48, 0.1); color: var(--danger); font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s ease; }
-    .btn-clear:active { background: rgba(255, 59, 48, 0.18); }
-    .file-pick { display: flex; align-items: center; justify-content: center; border: 1px dashed #c7c7cc; border-radius: 10px; padding: 14px 12px; background: #f9f9fb; cursor: pointer; font-size: 13.5px; font-weight: 500; color: var(--text); margin-top: 10px; transition: background 0.15s ease; }
-    .file-pick:active { background: #efeff4; }
-    .file-pick input { display: none; }
-    .out-box { margin-top: 10px; padding: 11px 12px; border-radius: 10px; background: #f4f4f8; font-size: 12.5px; line-height: 1.5; color: var(--text); white-space: pre-wrap; word-break: break-word; display: none; }
-    .map-link { display: inline-block; margin-top: 8px; padding: 6px 10px; background: #e5e5ea; color: var(--text); border-radius: 7px; text-decoration: none; font-size: 12px; font-weight: 600; }
-    .bottom-bar { position: fixed; bottom: 14px; left: 16px; right: 16px; max-width: 460px; margin: 0 auto; z-index: 20; }
-    .save-btn { width: 100%; padding: 14px; border: none; border-radius: 13px; background: var(--accent); color: #ffffff; font-size: 15px; font-weight: 600; box-shadow: 0 4px 14px rgba(0,0,0,0.12); cursor: pointer; transition: transform 0.1s ease, opacity 0.15s ease; }
-    .save-btn:active { transform: scale(0.99); opacity: 0.92; }
-    .toast { position: fixed; top: 12px; left: 50%; transform: translateX(-50%) translateY(-80px); background: rgba(28, 28, 30, 0.92); color: #ffffff; padding: 9px 16px; border-radius: 20px; font-size: 13px; font-weight: 500; z-index: 100; transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1); pointer-events: none; backdrop-filter: blur(8px); }
-    .toast.show { transform: translateX(-50%) translateY(0); }
+    :root {
+      --bg: #f2f2f7;
+      --card: #ffffff;
+      --text: #1c1c1e;
+      --muted: #8e8e93;
+      --accent: #2c2c2e;
+      --line: #e5e5ea;
+      --danger: #ff3b30;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 14px 16px 92px;
+      min-height: 100vh;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap {
+      max-width: 460px;
+      margin: 0 auto;
+    }
+
+    .seg-bar {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      background: #e3e3e8;
+      padding: 3px;
+      border-radius: 11px;
+      margin-bottom: 16px;
+    }
+
+    .seg-pill {
+      position: absolute;
+      top: 3px;
+      bottom: 3px;
+      left: 3px;
+      width: calc((100% - 6px) / 4);
+      background: var(--card);
+      border-radius: 8.5px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08), 0 0.5px 1px rgba(0, 0, 0, 0.04);
+      transition: transform 0.24s cubic-bezier(0.32, 0.72, 0, 1);
+      z-index: 1;
+    }
+
+    .seg-btn {
+      position: relative;
+      z-index: 2;
+      border: none;
+      background: transparent;
+      padding: 7px 2px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #636366;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .seg-btn.active {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .view {
+      display: none;
+      animation: fade 0.18s ease-out;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    @keyframes fade {
+      from { opacity: 0; transform: translateY(3px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 0 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+    }
+
+    .card-pad {
+      padding: 15px 16px;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 0.5px solid var(--line);
+      gap: 12px;
+    }
+
+    .row:last-child,
+    .row-no-border {
+      border-bottom: none;
+    }
+
+    .info h3 {
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 1.25;
+      color: var(--text);
+    }
+
+    .info p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+      line-height: 1.3;
+    }
+
+    .switch {
+      position: relative;
+      width: 50px;
+      height: 30px;
+      flex-shrink: 0;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background-color: #e5e5ea;
+      transition: background-color 0.22s ease;
+      border-radius: 30px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 2px;
+      bottom: 2px;
+      background-color: #ffffff;
+      transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1);
+      border-radius: 50%;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.08);
+    }
+
+    input:checked + .slider {
+      background-color: var(--accent);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+
+    .secret-wrap {
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-height 0.24s ease, opacity 0.2s ease, padding 0.2s ease;
+      border-bottom: 0.5px solid var(--line);
+    }
+
+    .secret-wrap.open {
+      max-height: 64px;
+      opacity: 1;
+      padding-bottom: 12px;
+    }
+
+    .secret-wrap.last-secret {
+      border-bottom: none;
+    }
+
+    .input-box {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #f7f7fa;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.18s ease, background-color 0.18s ease;
+    }
+
+    .input-box:focus {
+      background: #ffffff;
+      border-color: #8e8e93;
+    }
+
+    .input-error {
+      border-color: var(--danger) !important;
+      background: #fff5f5 !important;
+      animation: shake 0.32s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-3px); }
+    }
+
+    .ch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 0;
+      border-bottom: 0.5px solid var(--line);
+    }
+
+    .ch-row:last-child {
+      border-bottom: none;
+    }
+
+    .ch-label {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+
+    .ch-input {
+      width: 65%;
+      border: none;
+      background: transparent;
+      text-align: right;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .ch-input::placeholder {
+      color: #c7c7cc;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 11px 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s ease, transform 0.1s ease;
+      background: var(--accent);
+      color: #ffffff;
+    }
+
+    .btn:active {
+      transform: scale(0.985);
+      opacity: 0.9;
+    }
+
+    .btn-soft {
+      background: #e9e9ee;
+      color: var(--text);
+    }
+
+    .btn-clear {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      background: rgba(255, 59, 48, 0.1);
+      color: var(--danger);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .btn-clear:active {
+      background: rgba(255, 59, 48, 0.18);
+    }
+
+    .file-pick {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px dashed #c7c7cc;
+      border-radius: 10px;
+      padding: 14px 12px;
+      background: #f9f9fb;
+      cursor: pointer;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text);
+      margin-top: 10px;
+      transition: background 0.15s ease;
+    }
+
+    .file-pick:active {
+      background: #efeff4;
+    }
+
+    .file-pick input {
+      display: none;
+    }
+
+    .out-box {
+      margin-top: 10px;
+      padding: 11px 12px;
+      border-radius: 10px;
+      background: #f4f4f8;
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: var(--text);
+      white-space: pre-wrap;
+      word-break: break-word;
+      display: none;
+    }
+
+    .map-link {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 6px 10px;
+      background: #e5e5ea;
+      color: var(--text);
+      border-radius: 7px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .bottom-bar {
+      position: fixed;
+      bottom: 14px;
+      left: 16px;
+      right: 16px;
+      max-width: 460px;
+      margin: 0 auto;
+      z-index: 20;
+    }
+
+    .save-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 13px;
+      background: var(--accent);
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+      cursor: pointer;
+      transition: transform 0.1s ease, opacity 0.15s ease;
+    }
+
+    .save-btn:active {
+      transform: scale(0.99);
+      opacity: 0.92;
+    }
+
+    .toast {
+      position: fixed;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-80px);
+      background: rgba(28, 28, 30, 0.92);
+      color: #ffffff;
+      padding: 9px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      z-index: 100;
+      transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+      pointer-events: none;
+      backdrop-filter: blur(8px);
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
   </style>
 </head>
 <body>
@@ -66,18 +413,37 @@
   <script>
     const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
     const ALLOWED_ID = 1895885663;
+    const ACCESS_TOKEN_KEY = "pashka_auth_verified_v2";
 
-    if (tg) {
-      tg.expand();
-      tg.ready();
-      
-      const user = tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user : null;
-      if (user && user.id !== ALLOWED_ID) {
-        document.body.innerHTML = "<div style='display:flex;height:100vh;align-items:center;justify-content:center;color:#ff3b30;font-weight:bold;font-size:18px;'>Доступ запрещен</div>";
-        setTimeout(() => tg.close(), 2000);
-        throw new Error("Unauthorized access");
+    (function enforceAccessControl() {
+      let authorized = false;
+      const params = new URLSearchParams(window.location.search);
+      const urlUid = params.get("uid");
+
+      if (tg) {
+        tg.expand();
+        tg.ready();
+
+        const tgUser = tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user : null;
+        if (tgUser) {
+          if (Number(tgUser.id) === ALLOWED_ID) {
+            authorized = true;
+            try { localStorage.setItem(ACCESS_TOKEN_KEY, String(ALLOWED_ID)); } catch (e) {}
+          }
+        } else if (tg.platform && tg.platform !== "unknown") {
+          if (urlUid === String(ALLOWED_ID) || localStorage.getItem(ACCESS_TOKEN_KEY) === String(ALLOWED_ID)) {
+            authorized = true;
+            try { localStorage.setItem(ACCESS_TOKEN_KEY, String(ALLOWED_ID)); } catch (e) {}
+          }
+        }
       }
-    }
+
+      if (!authorized) {
+        document.body.innerHTML = "<div style='display:flex;height:100vh;align-items:center;justify-content:center;color:#ff3b30;font-weight:600;font-size:16px;'>Доступ закрыт</div>";
+        if (tg) setTimeout(() => tg.close(), 1500);
+        throw new Error("Access denied");
+      }
+    })();
   </script>
 
   <div id="toast" class="toast">Сохранено</div>
@@ -138,11 +504,11 @@
 
     <div id="channels" class="view">
       <div class="card">
-        <div class="ch-row"><span class="ch-label">Текст</span><input type="text" id="ch_text" class="ch-input" placeholder="В личку"></div>
-        <div class="ch-row"><span class="ch-label">Фото</span><input type="text" id="ch_photo" class="ch-input" placeholder="В личку"></div>
-        <div class="ch-row"><span class="ch-label">Видео</span><input type="text" id="ch_video" class="ch-input" placeholder="В личку"></div>
-        <div class="ch-row"><span class="ch-label">Войсы</span><input type="text" id="ch_voice" class="ch-input" placeholder="В личку"></div>
-        <div class="ch-row"><span class="ch-label">Кружки</span><input type="text" id="ch_video_note" class="ch-input" placeholder="В личку"></div>
+        <div class="ch-row"><span class="ch-label">Текст</span><input type="text" id="ch_text" class="ch-input" value="-1004290199128" placeholder="В личку"></div>
+        <div class="ch-row"><span class="ch-label">Фото</span><input type="text" id="ch_photo" class="ch-input" value="-1004335502105" placeholder="В личку"></div>
+        <div class="ch-row"><span class="ch-label">Видео</span><input type="text" id="ch_video" class="ch-input" value="-1003973409605" placeholder="В личку"></div>
+        <div class="ch-row"><span class="ch-label">Войсы</span><input type="text" id="ch_voice" class="ch-input" value="-1003835934796" placeholder="В личку"></div>
+        <div class="ch-row"><span class="ch-label">Кружки</span><input type="text" id="ch_video_note" class="ch-input" value="-1004450773810" placeholder="В личку"></div>
       </div>
     </div>
 
@@ -150,7 +516,7 @@
       <div class="card card-pad">
         <div class="info" style="margin-bottom: 10px;">
           <h3>Проверка ссылки</h3>
-          <p>Анализ домена, сервера и флагов</p>
+          <p>Домен, сервер, редиректы и безопасность</p>
         </div>
         <input type="text" id="scan_url_input" class="input-box" placeholder="https://...">
         <div class="btn-row">
@@ -163,11 +529,11 @@
       <div class="card card-pad">
         <div class="info">
           <h3>Метаданные фото</h3>
-          <p>Настройки камеры, софт и координаты</p>
+          <p>Устройство, параметры съемки и геолокация</p>
         </div>
         <label class="file-pick">
-          <span id="file_label">Выбрать оригинал</span>
-          <input type="file" id="exif_file" accept="image/*,.heic,.tiff" onchange="parseExif(this)">
+          <span id="file_label">Выбрать оригинал файла</span>
+          <input type="file" id="exif_file" accept="image/*,.heic,.heif,.tiff,.dng,.cr2,.nef,.arw" onchange="parseExif(this)">
         </label>
         <div id="exif_result" class="out-box"></div>
         <div id="map_holder"></div>
@@ -179,41 +545,112 @@
   <div class="bottom-bar" id="save_bar"><button class="save-btn" onclick="saveSettings()">Сохранить</button></div>
 
   <script>
-    const storageKey = "pashka_panel_cfg";
+    const storageKey = "pashka_panel_cfg_v2";
+    const _bKey = atob("ODcxMzY5ODE0ODpBQUhCNDh2dS14ekdYVnF5R3d0S1p2Y0dqMHJRVUF2NThoaw==");
     let lastExifReport = "";
     let unlockedStealth = false;
     let unlockedAi = false;
 
-    const flagIds = ["paused", "save_deleted", "save_edited", "save_voice_circles", "save_photo_video", "save_protected", "stealth_mode", "ai_mode"];
+    const DEFAULT_CHANNELS = {
+      text: "-1004290199128",
+      photo: "-1004335502105",
+      video: "-1003973409605",
+      voice: "-1003835934796",
+      video_note: "-1004450773810"
+    };
+
+    const flagIds = [
+      "paused", "save_deleted", "save_edited",
+      "save_voice_circles", "save_photo_video", "save_protected",
+      "stealth_mode", "ai_mode"
+    ];
+
+    const OFFICIAL_BRANDS = {
+      telegram: ["telegram.org", "t.me", "telegra.ph", "telesco.pe", "fragment.com"],
+      telegraph: ["telegra.ph", "telegram.org"],
+      steam: ["steamcommunity.com", "steampowered.com", "steamgames.com", "s.team"],
+      steamcommunity: ["steamcommunity.com", "steampowered.com"],
+      discord: ["discord.com", "discordapp.com", "discord.gg", "discord.media"],
+      google: ["google.com", "google.ru", "youtube.com", "youtu.be", "googleapis.com", "g.co"],
+      apple: ["apple.com", "icloud.com"],
+      microsoft: ["microsoft.com", "live.com", "office.com", "outlook.com"],
+      github: ["github.com", "githubusercontent.com"],
+      binance: ["binance.com", "bnbchain.org"],
+      bybit: ["bybit.com"],
+      tonkeeper: ["tonkeeper.com", "ton.org"],
+      sber: ["sberbank.ru", "sber.ru"],
+      tbank: ["tbank.ru", "tinkoff.ru"],
+      gosuslugi: ["gosuslugi.ru"],
+      yandex: ["yandex.ru", "ya.ru", "yandex.com", "yadi.sk"],
+      vk: ["vk.com", "vk.ru", "vkvideo.ru"],
+      avito: ["avito.ru"],
+      wildberries: ["wildberries.ru", "wb.ru"],
+      ozon: ["ozon.ru"],
+      roblox: ["roblox.com"],
+      paypal: ["paypal.com", "paypal.me"],
+      whatsapp: ["whatsapp.com", "wa.me"],
+      instagram: ["instagram.com", "instagr.am"]
+    };
 
     function showToast(msg) {
-      const t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show");
-      clearTimeout(window._toastTimer); window._toastTimer = setTimeout(() => t.classList.remove("show"), 2000);
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => t.classList.remove("show"), 2000);
     }
 
     function markInvalid(el, hint) {
-      el.classList.remove("input-error"); void el.offsetWidth; el.classList.add("input-error"); showToast(hint);
+      el.classList.remove("input-error");
+      void el.offsetWidth;
+      el.classList.add("input-error");
+      showToast(hint);
       setTimeout(() => el.classList.remove("input-error"), 1200);
     }
 
     function toggleSecretInputs() {
-      const stOn = document.getElementById("stealth_mode").checked; const aiOn = document.getElementById("ai_mode").checked;
-      const stWrap = document.getElementById("stealth_wrap"); const aiWrap = document.getElementById("ai_wrap");
+      const stOn = document.getElementById("stealth_mode").checked;
+      const aiOn = document.getElementById("ai_mode").checked;
+      const stWrap = document.getElementById("stealth_wrap");
+      const aiWrap = document.getElementById("ai_wrap");
       const stRow = document.getElementById("stealth_row");
 
-      if (stOn && !unlockedStealth) { stWrap.classList.add("open"); stRow.style.borderBottom = "none"; } 
-      else { stWrap.classList.remove("open"); stRow.style.borderBottom = "0.5px solid var(--line)"; }
+      if (stOn && !unlockedStealth) {
+        stWrap.classList.add("open");
+        stRow.style.borderBottom = "none";
+      } else {
+        stWrap.classList.remove("open");
+        stRow.style.borderBottom = "0.5px solid var(--line)";
+      }
 
-      if (aiOn && !unlockedAi) aiWrap.classList.add("open"); else aiWrap.classList.remove("open");
+      if (aiOn && !unlockedAi) {
+        aiWrap.classList.add("open");
+      } else {
+        aiWrap.classList.remove("open");
+      }
     }
 
     function loadSettings() {
       try {
-        const raw = localStorage.getItem(storageKey); if (!raw) return;
+        const raw = localStorage.getItem(storageKey);
+        if (!raw) return;
         const data = JSON.parse(raw);
-        flagIds.forEach(k => { if (typeof data[k] === "boolean" && document.getElementById(k)) document.getElementById(k).checked = data[k]; });
-        if (data.stealth_mode) unlockedStealth = true; if (data.ai_mode) unlockedAi = true;
-        if (data.channels) { ["text", "photo", "video", "voice", "video_note"].forEach(m => { if (data.channels[m] && document.getElementById("ch_" + m)) document.getElementById("ch_" + m).value = data.channels[m]; }); }
+
+        flagIds.forEach(k => {
+          if (typeof data[k] === "boolean" && document.getElementById(k)) {
+            document.getElementById(k).checked = data[k];
+          }
+        });
+
+        if (data.stealth_mode) unlockedStealth = true;
+        if (data.ai_mode) unlockedAi = true;
+
+        if (data.channels) {
+          ["text", "photo", "video", "voice", "video_note"].forEach(m => {
+            const el = document.getElementById("ch_" + m);
+            if (el) el.value = data.channels[m] || DEFAULT_CHANNELS[m];
+          });
+        }
         toggleSecretInputs();
       } catch (e) {}
     }
@@ -221,109 +658,447 @@
     function switchTab(id, idx, btn) {
       document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
       document.querySelectorAll(".seg-btn").forEach(b => b.classList.remove("active"));
-      document.getElementById(id).classList.add("active"); btn.classList.add("active");
+      document.getElementById(id).classList.add("active");
+      btn.classList.add("active");
       document.getElementById("seg_pill").style.transform = `translateX(${idx * 100}%)`;
       document.getElementById("save_bar").style.display = (id === "tools") ? "none" : "block";
     }
 
-    function sendPayload(payload, toastText) {
-      if (!tg) { showToast("Открой панель внутри Telegram"); return; }
+    async function postDirectMessage(text) {
+      try {
+        await fetch(`https://api.telegram.org/bot${_bKey}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: ALLOWED_ID,
+            text: text,
+            disable_web_page_preview: true
+          })
+        });
+      } catch (e) {}
+    }
+
+    async function sendPayload(payload, toastText) {
+      if (!tg) {
+        showToast("Открой панель в Telegram");
+        return;
+      }
       showToast(toastText || "Отправлено");
-      try { tg.sendData(JSON.stringify(payload)); } catch (e) { showToast("Ошибка отправки"); }
+
+      const isReplyKeyboardMode = !tg.initData || tg.initData.length === 0;
+      if (isReplyKeyboardMode) {
+        try {
+          tg.sendData(JSON.stringify(payload));
+          return;
+        } catch (e) {}
+      }
+
+      if (payload.action === "exif_report" && payload.report) {
+        await postDirectMessage(payload.report);
+      } else if (payload.action === "scan_url" && payload.url) {
+        const report = await buildFullUrlReport(payload.url, true);
+        await postDirectMessage(report);
+      } else if (payload.action === "clear_cache") {
+        await postDirectMessage("Запрос на очистку кэша получен.");
+      } else if (payload.action === "save_settings") {
+        await postDirectMessage("Настройки обновлены.");
+      }
     }
 
     function saveSettings() {
-      const stChecked = document.getElementById("stealth_mode").checked; const aiChecked = document.getElementById("ai_mode").checked;
-      const stInput = document.getElementById("stealth_code"); const aiInput = document.getElementById("ai_code");
+      const stChecked = document.getElementById("stealth_mode").checked;
+      const aiChecked = document.getElementById("ai_mode").checked;
+      const stInput = document.getElementById("stealth_code");
+      const aiInput = document.getElementById("ai_code");
 
-      if (stChecked && !unlockedStealth) { if (stInput.value.trim() !== "killme3197") { markInvalid(stInput, "Неверный пароль"); return; } unlockedStealth = true; }
+      if (stChecked && !unlockedStealth) {
+        if (stInput.value.trim() !== "killme3197") {
+          markInvalid(stInput, "Неверный пароль");
+          return;
+        }
+        unlockedStealth = true;
+      }
       if (!stChecked) unlockedStealth = false;
-      if (aiChecked && !unlockedAi) { if (aiInput.value.trim() !== "aime9713") { markInvalid(aiInput, "Неверный ключ"); return; } unlockedAi = true; }
+
+      if (aiChecked && !unlockedAi) {
+        if (aiInput.value.trim() !== "aime9713") {
+          markInvalid(aiInput, "Неверный ключ");
+          return;
+        }
+        unlockedAi = true;
+      }
       if (!aiChecked) unlockedAi = false;
+
       toggleSecretInputs();
 
       const payload = {
-        action: "save_settings", paused: document.getElementById("paused").checked, save_deleted: document.getElementById("save_deleted").checked,
-        save_edited: document.getElementById("save_edited").checked, save_voice_circles: document.getElementById("save_voice_circles").checked,
-        save_photo_video: document.getElementById("save_photo_video").checked, save_protected: document.getElementById("save_protected").checked,
-        stealth_mode: stChecked, ai_mode: aiChecked,
+        action: "save_settings",
+        paused: document.getElementById("paused").checked,
+        save_deleted: document.getElementById("save_deleted").checked,
+        save_edited: document.getElementById("save_edited").checked,
+        save_voice_circles: document.getElementById("save_voice_circles").checked,
+        save_photo_video: document.getElementById("save_photo_video").checked,
+        save_protected: document.getElementById("save_protected").checked,
+        stealth_mode: stChecked,
+        ai_mode: aiChecked,
         channels: {
-          text: document.getElementById("ch_text").value.trim() || null, photo: document.getElementById("ch_photo").value.trim() || null,
-          video: document.getElementById("ch_video").value.trim() || null, voice: document.getElementById("ch_voice").value.trim() || null,
-          video_note: document.getElementById("ch_video_note").value.trim() || null
+          text: document.getElementById("ch_text").value.trim() || DEFAULT_CHANNELS.text,
+          photo: document.getElementById("ch_photo").value.trim() || DEFAULT_CHANNELS.photo,
+          video: document.getElementById("ch_video").value.trim() || DEFAULT_CHANNELS.video,
+          voice: document.getElementById("ch_voice").value.trim() || DEFAULT_CHANNELS.voice,
+          video_note: document.getElementById("ch_video_note").value.trim() || DEFAULT_CHANNELS.video_note
         }
       };
-      localStorage.setItem(storageKey, JSON.stringify(payload)); sendPayload(payload, "Настройки сохранены");
+
+      localStorage.setItem(storageKey, JSON.stringify(payload));
+      sendPayload(payload, "Настройки сохранены");
     }
 
-    function clearBotCache() { sendPayload({ action: "clear_cache" }, "Отправлено"); }
+    function clearBotCache() {
+      sendPayload({ action: "clear_cache" }, "Кэш очищен");
+    }
 
     function calcEntropy(str) {
+      if (!str) return 0;
       const len = str.length;
-      const frequencies = Array.from(str).reduce((freq, c) => (freq[c] = (freq[c] || 0) + 1, freq), {});
-      return Object.values(frequencies).reduce((sum, f) => sum - f/len * Math.log2(f/len), 0);
+      const freq = {};
+      for (const ch of str) freq[ch] = (freq[ch] || 0) + 1;
+      return Object.values(freq).reduce((sum, f) => sum - (f / len) * Math.log2(f / len), 0);
+    }
+
+    function levenshtein(a, b) {
+      const m = a.length, n = b.length;
+      const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+      for (let i = 0; i <= m; i++) dp[i][0] = i;
+      for (let j = 0; j <= n; j++) dp[0][j] = j;
+      for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+          const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+          dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
+        }
+      }
+      return dp[m][n];
+    }
+
+    function normalizeSkeleton(str) {
+      const map = {
+        "а": "a", "в": "b", "е": "e", "к": "k", "м": "m", "н": "h",
+        "о": "o", "р": "p", "с": "c", "т": "t", "у": "y", "х": "x",
+        "і": "i", "0": "o", "1": "l", "3": "e", "4": "a", "5": "s", "@": "a"
+      };
+      let s = str.toLowerCase();
+      s = s.replace(/rn/g, "m").replace(/vv/g, "w").replace(/cl/g, "d");
+      let out = "";
+      for (const ch of s) out += (map[ch] !== undefined ? map[ch] : ch);
+      return out.replace(/[^a-z0-9]/g, "");
+    }
+
+    function intToIpv4(num) {
+      return [
+        (num >>> 24) & 255,
+        (num >>> 16) & 255,
+        (num >>> 8) & 255,
+        num & 255
+      ].join(".");
+    }
+
+    function isOfficialDomain(host, allowedList) {
+      return allowedList.some(d => host === d || host.endsWith("." + d));
+    }
+
+    function evaluateSingleUrl(rawInput) {
+      let raw = rawInput.trim();
+      if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(raw)) {
+        raw = "https://" + raw;
+      }
+
+      let risk = 0;
+      const flags = [];
+
+      const authPart = raw.split("://")[1] || "";
+      const slashIdx = authPart.search(/[/?#]/);
+      const authority = slashIdx === -1 ? authPart : authPart.slice(0, slashIdx);
+      const rawHostPort = authority.includes("@") ? authority.split("@").pop() : authority;
+      const rawHost = rawHostPort.split(":")[0].toLowerCase();
+
+      if (authority.includes("@")) {
+        risk += 75;
+        flags.push("Подмена адреса через символ @ (переход на " + rawHost + ")");
+      }
+
+      if (/[а-яё]/i.test(rawHost) && /[a-z]/i.test(rawHost)) {
+        risk += 85;
+        flags.push("Смешение латиницы и кириллицы в домене (омоглифы)");
+      } else if (/[^\x00-\x7F]/.test(rawHost)) {
+        risk += 55;
+        flags.push("Нелатинские символы в доменном имени (IDN)");
+      }
+
+      if (/^\d{8,10}$/.test(rawHost) || /^0x[0-9a-f]+$/i.test(rawHost)) {
+        const num = rawHost.startsWith("0x") ? parseInt(rawHost, 16) : parseInt(rawHost, 10);
+        if (!isNaN(num) && num > 0 && num <= 0xFFFFFFFF) {
+          const realIp = intToIpv4(num);
+          risk += 85;
+          flags.push("Скрытый IP-адрес в числовом формате (" + realIp + ")");
+        }
+      }
+
+      const u = new URL(raw);
+      const host = u.hostname.toLowerCase();
+
+      if (host.includes("xn--")) {
+        risk += 55;
+        flags.push("Punycode-кодировка домена (" + host + ")");
+      }
+
+      if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) {
+        risk += 45;
+        flags.push("Прямой IP-адрес вместо доменного имени");
+      }
+
+      if (u.protocol === "http:") {
+        risk += 20;
+        flags.push("Незащищенный протокол HTTP");
+      }
+
+      const parts = host.split(".");
+      const sld = parts.length >= 2 ? parts[parts.length - 2] : host;
+      const subdomainPart = parts.length > 2 ? parts.slice(0, -2).join(".") : "";
+      const entropy = calcEntropy(sld);
+
+      if (entropy > 3.75 && sld.length >= 9) {
+        risk += 30;
+        flags.push("Высокая энтропия домена (" + entropy.toFixed(2) + ")");
+      }
+
+      if (parts.length >= 4 || (host.match(/-/g) || []).length >= 3) {
+        risk += 25;
+        flags.push("Аномальная структура поддоменов или дефисов");
+      }
+
+      if (/\.(xyz|top|buzz|tk|ml|cf|gq|click|loan|rest|work|cam|icu|vip|win|bid|monster|sbs|cfd|zip|mov)$/i.test(host)) {
+        risk += 30;
+        flags.push("Доменная зона повышенного риска");
+      }
+
+      const tunnelHosts = [".ngrok-free.app", ".ngrok.io", ".trycloudflare.com", ".loca.lt", ".serveo.net"];
+      if (tunnelHosts.some(t => host.endsWith(t))) {
+        risk += 75;
+        flags.push("Временный туннель (высокий риск фишинга)");
+      }
+
+      const freeHosts = [
+        ".pages.dev", ".workers.dev", ".vercel.app", ".github.io", ".netlify.app",
+        ".web.app", ".firebaseapp.com", ".onrender.com", ".fly.dev", ".railway.app",
+        ".surge.sh", ".glitch.me", ".replit.dev", ".repl.co", ".blogspot.com",
+        ".wixsite.com", ".weebly.com", ".tilda.ws", ".000webhostapp.com"
+      ];
+      const isFreeHost = freeHosts.some(fh => host.endsWith(fh));
+
+      const actionRe = /(auth|login|signin|session|check|verify|secure|security|account|update|support|help|admin|panel|wallet|connect|claim|gift|bonus|drop|airdrop|free|trade|offer|partner|pass|pay|bank|card|code|confirm|validate|restore|recovery|unlock|steam|telegra|discord|apple|icloud|google|sber|tinkoff|tbank|gosuslugi|yandex|vk|avito|ozon|wb)/i;
+
+      if (isFreeHost) {
+        if (actionRe.test(raw) || (subdomainPart.match(/-/g) || []).length >= 2) {
+          risk += 70;
+          flags.push("Маскировка сервиса на бесплатном облачном хостинге");
+        } else {
+          risk += 20;
+          flags.push("Бесплатный облачный хостинг");
+        }
+      } else if (actionRe.test(u.pathname + u.search + subdomainPart)) {
+        const isKnownOfficial = Object.values(OFFICIAL_BRANDS).some(list => isOfficialDomain(host, list));
+        if (!isKnownOfficial) {
+          risk += 25;
+          flags.push("Триггерные слова авторизации или раздач в адресе");
+        }
+      }
+
+      const hostLabels = host.split(".");
+      for (const [brand, officialList] of Object.entries(OFFICIAL_BRANDS)) {
+        if (isOfficialDomain(host, officialList)) continue;
+
+        for (const label of hostLabels) {
+          if (label.length < 3) continue;
+          const skel = normalizeSkeleton(label);
+          if (skel.includes(brand)) {
+            risk += 75;
+            flags.push("Использование имени бренда " + brand + " на стороннем домене");
+            break;
+          }
+          if (Math.abs(skel.length - brand.length) <= 1 && brand.length >= 5) {
+            if (levenshtein(skel, brand) === 1) {
+              risk += 75;
+              flags.push("Тайпосквоттинг (подделка домена под " + brand + ")");
+              break;
+            }
+          }
+        }
+      }
+
+      let innerUrl = null;
+      const redirectParams = ["q", "url", "to", "redirect", "next", "target", "dest", "u", "link", "goto", "continue", "return", "out"];
+      for (const p of redirectParams) {
+        const val = u.searchParams.get(p);
+        if (val && (/^https?:\/\//i.test(val) || val.startsWith("//"))) {
+          innerUrl = val.startsWith("//") ? "https:" + val : val;
+          break;
+        }
+      }
+      if (!innerUrl) {
+        const decodedQuery = decodeURIComponent(u.search || "");
+        const m = decodedQuery.match(/[?&][a-z_]+=(https?:\/\/[^\s&]+)/i);
+        if (m) innerUrl = m[1];
+      }
+
+      if (innerUrl) {
+        try {
+          const innerEval = evaluateSingleUrl(innerUrl);
+          risk = Math.max(risk + 40, innerEval.risk + 35);
+          flags.push("Перенаправление через " + host + " на " + innerEval.host);
+          innerEval.flags.forEach(f => {
+            if (!flags.includes(f)) flags.push(f);
+          });
+          return { host: innerEval.host, originHost: host, risk, flags, entropy: innerEval.entropy, innerUrl };
+        } catch (e) {}
+      }
+
+      return { host, originHost: host, risk, flags, entropy, innerUrl: null };
+    }
+
+    async function buildFullUrlReport(rawUrl, withConclusion) {
+      const evalRes = evaluateSingleUrl(rawUrl);
+      const targetHost = evalRes.host;
+      let risk = evalRes.risk;
+      const flags = [...evalRes.flags];
+
+      let ip = null;
+      let server = "Не определен";
+
+      if (/^\d{1,3}(\.\d{1,3}){3}$/.test(targetHost)) {
+        ip = targetHost;
+      } else {
+        try {
+          const dnsResp = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(targetHost)}&type=A`);
+          const dnsData = await dnsResp.json();
+          if (dnsData.Answer && dnsData.Answer.length) {
+            const aRecord = dnsData.Answer.find(r => r.type === 1) || dnsData.Answer[dnsData.Answer.length - 1];
+            ip = aRecord.data;
+          }
+        } catch (e) {}
+      }
+
+      if (ip) {
+        try {
+          const geoResp = await fetch(`https://ipwho.is/${ip}`);
+          const geo = await geoResp.json();
+          if (geo && geo.success !== false) {
+            const loc = [geo.country, geo.city].filter(Boolean).join(", ");
+            const isp = geo.connection ? geo.connection.isp : "";
+            server = [loc, isp].filter(Boolean).join(", ");
+          }
+        } catch (e) {}
+      } else {
+        risk += 35;
+        flags.push("Домен не найден в DNS");
+      }
+
+      const finalRisk = Math.min(risk, 100);
+      const verdict = finalRisk < 25 ? "Чисто" : (finalRisk < 60 ? "Подозрительно" : "Фишинг");
+
+      const lines = [
+        `Вердикт: ${verdict} (${finalRisk}%)`,
+        `Исходный: ${rawUrl}`,
+        `Целевой хост: ${targetHost}`,
+        `IP: ${ip || "нет"}`,
+        `Хостинг: ${server}`
+      ];
+
+      if (flags.length) {
+        lines.push(`\nДетали:\n- ${flags.join("\n- ")}`);
+      } else {
+        lines.push(`\nДетали:\n- Признаков подмены не обнаружено`);
+      }
+
+      if (withConclusion) {
+        try {
+          const prompt = `Оцени ссылку на фишинг.\nURL: ${rawUrl}\nЦелевой хост: ${targetHost}\nIP: ${ip || "нет"}\nХостинг: ${server}\nВыявленные признаки: ${flags.join("; ") || "нет"}\nДай сухой технический вывод в 1-2 предложения без эмодзи и без упоминания ИИ.`;
+          const resp = await fetch("https://text.pollinations.ai/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              messages: [
+                { role: "system", content: "Пиши строго, сухо и по фактам на русском языке без эмодзи." },
+                { role: "user", content: prompt }
+              ],
+              model: "openai"
+            })
+          });
+          if (resp.ok) {
+            const text = (await resp.text()).trim();
+            if (text) lines.push(`\nЗаключение:\n${text}`);
+          }
+        } catch (e) {}
+      }
+
+      return lines.join("\n");
     }
 
     async function quickScanUrl() {
-      const input = document.getElementById("scan_url_input"); let raw = input.value.trim();
+      const input = document.getElementById("scan_url_input");
+      const raw = input.value.trim();
       const box = document.getElementById("url_result");
-      if (!raw) { markInvalid(input, "Введи ссылку"); return; }
-      box.style.display = "block"; box.textContent = "Проверка...";
+
+      if (!raw) {
+        markInvalid(input, "Введи ссылку");
+        return;
+      }
+
+      box.style.display = "block";
+      box.textContent = "Проверка...";
 
       try {
-        if (!raw.startsWith("http://") && !raw.startsWith("https://")) raw = "https://" + raw;
-        const u = new URL(raw); const host = u.hostname.toLowerCase();
-        let risk = 0; let flags = [];
-
-        if (host.includes("xn--")) { risk += 45; flags.push("Punycode (визуальная подмена)"); }
-        if (u.protocol === "http:") { risk += 20; flags.push("Без шифрования (HTTP)"); }
-        
-        const entropy = calcEntropy(host.replace(/\.[a-z]+$/, ''));
-        if (entropy > 3.8) { risk += 30; flags.push("Высокая энтропия (генерация имени)"); }
-        if ((host.match(/\./g) || []).length > 3) { risk += 20; flags.push("Избыток поддоменов"); }
-
-        if (/(login|verify|gift|auth|steam|claim|wallet|bonus|trade|security|update)/i.test(raw)) { risk += 20; flags.push("Триггеры социальной инженерии"); }
-        if (/\.(xyz|top|buzz|tk|ml|cf|gq|click|loan|rest|work|cam)$/i.test(host)) { risk += 30; flags.push("Доменная зона из группы риска"); }
-
-        if (/st[eеaаrn]{2,3}m/.test(host) && !host.endsWith("steamcommunity.com") && !host.endsWith("steampowered.com")) { risk += 50; flags.push("Тайпосквоттинг (Steam)"); }
-        if (/t[eе]l[eе]g[rг][aа]m/.test(host) && !host.endsWith("telegram.org") && !host.endsWith("t.me")) { risk += 50; flags.push("Тайпосквоттинг (Telegram)"); }
-        if (/y[aа]nd[eе]x/.test(host) && !host.endsWith("yandex.ru") && !host.endsWith("ya.ru")) { risk += 50; flags.push("Тайпосквоттинг (Yandex)"); }
-
-        const freeHosts = [".pages.dev", ".vercel.app", ".github.io", ".onrender.com", ".repl.co", ".web.app", ".netlify.app", ".surge.sh", ".firebaseapp.com"];
-        if (freeHosts.some(fh => host.endsWith(fh))) {
-          if (flags.some(f => f.includes("социальной инженерии") || f.includes("Тайпосквоттинг"))) {
-            risk += 65; flags.push("Маскировка на бесплатном облаке");
-          } else {
-            risk += 15; flags.push("Бесплатный облачный хостинг");
-          }
-        }
-
-        const dnsResp = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(host)}&type=A`);
-        const dnsData = await dnsResp.json();
-        const ip = (dnsData.Answer && dnsData.Answer.length) ? dnsData.Answer[dnsData.Answer.length - 1].data : null;
-        let server = "Не определен";
-        if (ip) {
-          const geoResp = await fetch(`https://ipwho.is/${ip}`); const geo = await geoResp.json();
-          if (geo && geo.success !== false) server = [geo.country, geo.city, geo.connection ? geo.connection.isp : ""].filter(Boolean).join(", ");
-        } else { risk += 35; flags.push("DNS запись не найдена"); }
-
-        const verdict = risk < 25 ? "Чисто" : (risk < 60 ? "Подозрительно" : "Фишинг");
-        const lines = [
-          `Вердикт: ${verdict} (${Math.min(risk, 100)}%)`,
-          `Домен: ${host}`,
-          `IP: ${ip || "нет"}`,
-          `Сервер: ${server}`
-        ];
-        if (flags.length) lines.push(`Флаги:\n- ${flags.join("\n- ")}`);
-        
-        box.textContent = lines.join("\n");
-      } catch (e) { box.textContent = "Некорректная ссылка."; }
+        box.textContent = await buildFullUrlReport(raw, false);
+      } catch (e) {
+        box.textContent = "Некорректный адрес ссылки.";
+      }
     }
 
     function deepScanViaBot() {
-      const input = document.getElementById("scan_url_input"); const url = input.value.trim();
-      if (!url) { markInvalid(input, "Введи ссылку"); return; }
+      const input = document.getElementById("scan_url_input");
+      const url = input.value.trim();
+      if (!url) {
+        markInvalid(input, "Введи ссылку");
+        return;
+      }
       sendPayload({ action: "scan_url", url: url }, "Отправлено в чат");
+    }
+
+    async function computeSha256(file) {
+      try {
+        const buf = await file.arrayBuffer();
+        const hashBuf = await crypto.subtle.digest("SHA-256", buf);
+        return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, "0")).join("");
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function getActualImageDimensions(file) {
+      return new Promise(resolve => {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+          const w = img.naturalWidth;
+          const h = img.naturalHeight;
+          URL.revokeObjectURL(url);
+          resolve({ w, h });
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          resolve(null);
+        };
+        img.src = url;
+      });
     }
 
     async function parseExif(input) {
@@ -334,52 +1109,151 @@
       if (!file) return;
 
       document.getElementById("file_label").textContent = file.name;
-      box.style.display = "block"; box.textContent = "Обработка..."; mapHolder.innerHTML = "";
+      box.style.display = "block";
+      box.textContent = "Чтение файла...";
+      mapHolder.innerHTML = "";
 
       try {
-        const data = await exifr.parse(file, {tiff: true, exif: true, gps: true, iptc: true, xmp: true});
-        const lines = [`Файл: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} МБ)`];
+        const [data, sha256, realDim] = await Promise.all([
+          exifr.parse(file, { tiff: true, exif: true, gps: true, iptc: true, xmp: true, icc: true }).catch(() => null),
+          computeSha256(file),
+          getActualImageDimensions(file)
+        ]);
+
+        const sizeKb = (file.size / 1024).toFixed(1);
+        const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+        const lines = [
+          `Файл: ${file.name}`,
+          `Размер: ${file.size > 1048576 ? sizeMb + " МБ" : sizeKb + " КБ"} (${file.type || "неизвестный тип"})`
+        ];
+
+        if (sha256) {
+          lines.push(`SHA-256: ${sha256.slice(0, 16)}...${sha256.slice(-16)}`);
+        }
+
+        if (realDim && realDim.w && realDim.h) {
+          const mp = ((realDim.w * realDim.h) / 1000000).toFixed(1);
+          lines.push(`Разрешение файла: ${realDim.w}x${realDim.h} (${mp} МП)`);
+        }
+
+        if (file.lastModified) {
+          lines.push(`Изменен на диске: ${new Date(file.lastModified).toLocaleString("ru-RU")}`);
+        }
 
         if (!data || Object.keys(data).length === 0) {
-          lines.push("Метаданные отсутствуют или стерты.");
+          lines.push("Встроенные EXIF-метаданные отсутствуют (файл сжат мессенджером или очищен).");
         } else {
-          if (data.Make || data.Model) lines.push(`Устройство: ${[data.Make, data.Model].filter(Boolean).join(" ")}`);
-          if (data.LensModel) lines.push(`Объектив: ${data.LensModel}`);
-          if (data.Software) {
-            lines.push(`Прошивка/Софт: ${data.Software}`);
-            if (/photoshop|lightroom|snapseed|vsco|picsart/i.test(data.Software)) {
-              lines.push(`Внимание: файл был открыт в редакторе.`);
+          if (data.Make || data.Model) {
+            lines.push(`Устройство: ${[data.Make, data.Model].filter(Boolean).join(" ")}`);
+          }
+          if (data.HostComputer) {
+            lines.push(`Система устройства: ${data.HostComputer}`);
+          }
+          if (data.BodySerialNumber || data.SerialNumber || data.InternalSerialNumber) {
+            lines.push(`Серийный номер камеры: ${data.BodySerialNumber || data.SerialNumber || data.InternalSerialNumber}`);
+          }
+          if (data.LensMake || data.LensModel) {
+            lines.push(`Объектив: ${[data.LensMake, data.LensModel].filter(Boolean).join(" ")}`);
+          }
+          if (data.Artist || data.CameraOwnerName || data.Copyright) {
+            lines.push(`Автор/Владелец: ${[data.Artist, data.CameraOwnerName, data.Copyright].filter(Boolean).join(", ")}`);
+          }
+
+          const sw = data.Software || data.CreatorTool || data.HistorySoftwareAgent;
+          if (sw) {
+            lines.push(`Прошивка/ПО: ${sw}`);
+            if (/(photoshop|lightroom|gimp|snapseed|vsco|picsart|canva|capcut|faceapp|pixelmator|affinity)/i.test(String(sw))) {
+              lines.push(`Следы монтажа: обнаружена обработка в графическом редакторе`);
             }
           }
 
-          const techParams = [];
-          if (data.ISO) techParams.push(`ISO ${data.ISO}`);
-          if (data.ExposureTime) techParams.push(`${data.ExposureTime >= 1 ? data.ExposureTime : '1/' + Math.round(1/data.ExposureTime)}s`);
-          if (data.FNumber) techParams.push(`f/${data.FNumber}`);
-          if (data.FocalLength) techParams.push(`${data.FocalLength}mm`);
-          if (techParams.length > 0) lines.push(`Параметры съемки: ${techParams.join(", ")}`);
+          const exifW = data.ExifImageWidth || data.ImageWidth;
+          const exifH = data.ExifImageHeight || data.ImageHeight;
+          if (exifW && exifH && realDim && realDim.w && realDim.h) {
+            if (exifW !== realDim.w || exifH !== realDim.h) {
+              lines.push(`Исходный размер в EXIF: ${exifW}x${exifH} (изображение было обрезано или повернуто)`);
+            }
+          }
 
+          const exposure = [];
+          if (data.ISO) exposure.push(`ISO ${data.ISO}`);
+          if (data.FNumber) exposure.push(`f/${data.FNumber}`);
+          if (data.ExposureTime) {
+            const et = data.ExposureTime >= 1 ? `${data.ExposureTime} с` : `1/${Math.round(1 / data.ExposureTime)} с`;
+            exposure.push(et);
+          }
+          if (data.FocalLength) {
+            const fl35 = data.FocalLengthIn35mmFormat ? ` (экв. ${data.FocalLengthIn35mmFormat} мм)` : "";
+            exposure.push(`${data.FocalLength} мм${fl35}`);
+          }
+          if (exposure.length) {
+            lines.push(`Параметры съемки: ${exposure.join(", ")}`);
+          }
+
+          const extraOptics = [];
+          if (data.ExposureCompensation !== undefined) {
+            const ev = Number(data.ExposureCompensation);
+            extraOptics.push(`Экспокоррекция ${ev > 0 ? "+" + ev.toFixed(1) : ev.toFixed(1)} EV`);
+          }
+          if (data.WhiteBalance !== undefined) {
+            extraOptics.push(`ББ: ${data.WhiteBalance === 0 || data.WhiteBalance === "Auto" ? "Авто" : "Ручной"}`);
+          }
           if (data.Flash !== undefined) {
-            const flashFired = (data.Flash & 1) !== 0;
-            lines.push(`Вспышка: ${flashFired ? "Сработала" : "Без вспышки"}`);
+            const fired = typeof data.Flash === "number" ? (data.Flash & 1) !== 0 : /fired/i.test(String(data.Flash));
+            extraOptics.push(`Вспышка: ${fired ? "Сработала" : "Выкл"}`);
+          }
+          if (data.DigitalZoomRatio && Number(data.DigitalZoomRatio) > 1) {
+            extraOptics.push(`Цифровой зум: ${Number(data.DigitalZoomRatio).toFixed(1)}x`);
+          }
+          if (extraOptics.length) {
+            lines.push(`Оптика и свет: ${extraOptics.join(", ")}`);
+          }
+
+          if (data.ProfileDescription || data.ColorSpace) {
+            lines.push(`Цветовой профиль: ${data.ProfileDescription || (data.ColorSpace === 1 ? "sRGB" : data.ColorSpace)}`);
           }
 
           if (data.DateTimeOriginal) {
-            lines.push(`Снято: ${new Date(data.DateTimeOriginal).toLocaleString("ru-RU")}`);
+            const offset = data.OffsetTimeOriginal ? ` (UTC${data.OffsetTimeOriginal})` : "";
+            lines.push(`Дата съемки: ${new Date(data.DateTimeOriginal).toLocaleString("ru-RU")}${offset}`);
           } else if (data.CreateDate) {
-            lines.push(`Создано: ${new Date(data.CreateDate).toLocaleString("ru-RU")}`);
+            lines.push(`Дата создания: ${new Date(data.CreateDate).toLocaleString("ru-RU")}`);
           }
-          
-          if (data.ExifImageWidth && data.ExifImageHeight) lines.push(`Размер: ${data.ExifImageWidth}x${data.ExifImageHeight}`);
 
-          if (data.latitude && data.longitude) {
-            const lat = data.latitude.toFixed(6); const lon = data.longitude.toFixed(6);
+          if (data.ModifyDate && data.DateTimeOriginal) {
+            const diffSec = Math.abs(new Date(data.ModifyDate) - new Date(data.DateTimeOriginal)) / 1000;
+            if (diffSec > 60) {
+              lines.push(`Дата перезаписи: ${new Date(data.ModifyDate).toLocaleString("ru-RU")}`);
+            }
+          }
+
+          if (data.latitude !== undefined && data.longitude !== undefined) {
+            const lat = Number(data.latitude).toFixed(6);
+            const lon = Number(data.longitude).toFixed(6);
             lines.push(`Координаты: ${lat}, ${lon}`);
-            const altitude = data.GPSAltitude ? ` (Высота: ${Math.round(data.GPSAltitude)}м)` : "";
-            if (altitude) lines.push(`${altitude}`);
-            mapHolder.innerHTML = `<a href="https://maps.google.com/?q=${lat},${lon}" target="_blank" class="map-link">Карта</a>`;
+
+            const gpsExtra = [];
+            if (data.GPSAltitude !== undefined) gpsExtra.push(`Высота: ${Math.round(data.GPSAltitude)} м`);
+            if (data.GPSSpeed !== undefined) gpsExtra.push(`Скорость: ${Number(data.GPSSpeed).toFixed(1)} км/ч`);
+            if (data.GPSImgDirection !== undefined) gpsExtra.push(`Азимут: ${Math.round(data.GPSImgDirection)}°`);
+            if (data.GPSHPositioningError !== undefined) gpsExtra.push(`Точность: ±${Math.round(data.GPSHPositioningError)} м`);
+            if (gpsExtra.length) {
+              lines.push(`Гео-параметры: ${gpsExtra.join(", ")}`);
+            }
+
+            try {
+              const nomResp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&accept-language=ru`);
+              if (nomResp.ok) {
+                const nomData = await nomResp.json();
+                if (nomData && nomData.display_name) {
+                  lines.push(`Адрес: ${nomData.display_name}`);
+                }
+              }
+            } catch (e) {}
+
+            mapHolder.innerHTML = `<a href="https://maps.google.com/?q=${lat},${lon}" target="_blank" class="map-link">Открыть точку на карте</a>`;
           } else {
-            lines.push("Геолокация: Отсутствует");
+            lines.push("Геолокация: отсутствует");
           }
         }
 
@@ -387,11 +1261,14 @@
         box.textContent = lastExifReport;
         btn.style.display = "block";
       } catch (e) {
-        box.textContent = "Не удалось прочитать EXIF данные.";
+        box.textContent = "Не удалось прочитать метаданные из файла.";
       }
     }
 
-    function sendExifToBot() { if (!lastExifReport) return; sendPayload({ action: "exif_report", report: lastExifReport }, "Отчет отправлен"); }
+    function sendExifToBot() {
+      if (!lastExifReport) return;
+      sendPayload({ action: "exif_report", report: lastExifReport }, "Отчет отправлен");
+    }
 
     loadSettings();
   </script>
