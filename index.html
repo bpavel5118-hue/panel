@@ -302,6 +302,7 @@
       font-weight: 600;
       cursor: pointer;
       transition: background 0.15s ease;
+      margin-bottom: 10px;
     }
 
     .btn-clear:active {
@@ -454,28 +455,64 @@
     <div id="main" class="view active">
       <div class="card">
         <div class="row">
-          <div class="info"><h3>Пауза</h3><p>Временно не следить за чатами</p></div>
-          <label class="switch"><input type="checkbox" id="paused"><span class="slider"></span></label>
+          <div class="info">
+            <h3>Пауза</h3>
+            <p>Временно не следить за чатами</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="paused">
+            <span class="slider"></span>
+          </label>
         </div>
         <div class="row">
-          <div class="info"><h3>Удаленные</h3><p>Присылать стертые сообщения</p></div>
-          <label class="switch"><input type="checkbox" id="save_deleted" checked><span class="slider"></span></label>
+          <div class="info">
+            <h3>Удаленные</h3>
+            <p>Присылать стертые сообщения</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="save_deleted" checked>
+            <span class="slider"></span>
+          </label>
         </div>
         <div class="row">
-          <div class="info"><h3>Измененные</h3><p>Показывать текст до и после правки</p></div>
-          <label class="switch"><input type="checkbox" id="save_edited" checked><span class="slider"></span></label>
+          <div class="info">
+            <h3>Измененные</h3>
+            <p>Показывать текст до и после правки</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="save_edited" checked>
+            <span class="slider"></span>
+          </label>
         </div>
         <div class="row">
-          <div class="info"><h3>Голосовые и кружки</h3><p>Сохранять войсы и видеосообщения</p></div>
-          <label class="switch"><input type="checkbox" id="save_voice_circles" checked><span class="slider"></span></label>
+          <div class="info">
+            <h3>Голосовые и кружки</h3>
+            <p>Сохранять войсы и видеосообщения</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="save_voice_circles" checked>
+            <span class="slider"></span>
+          </label>
         </div>
         <div class="row">
-          <div class="info"><h3>Фото и видео</h3><p>Сохранять обычные медиафайлы</p></div>
-          <label class="switch"><input type="checkbox" id="save_photo_video" checked><span class="slider"></span></label>
+          <div class="info">
+            <h3>Фото и видео</h3>
+            <p>Сохранять обычные медиафайлы</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="save_photo_video" checked>
+            <span class="slider"></span>
+          </label>
         </div>
         <div class="row">
-          <div class="info"><h3>Сгорающие</h3><p>Фото и видео с таймером по реплаю</p></div>
-          <label class="switch"><input type="checkbox" id="save_protected" checked><span class="slider"></span></label>
+          <div class="info">
+            <h3>Сгорающие</h3>
+            <p>Фото и видео с таймером по реплаю</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="save_protected" checked>
+            <span class="slider"></span>
+          </label>
         </div>
       </div>
     </div>
@@ -483,26 +520,58 @@
     <div id="modes" class="view">
       <div class="card">
         <div class="row" id="stealth_row">
-          <div class="info"><h3>Инкогнито</h3><p>Не сохранять мои сообщения у других</p></div>
-          <label class="switch"><input type="checkbox" id="stealth_mode" onchange="toggleSecretInputs()"><span class="slider"></span></label>
+          <div class="info">
+            <h3>Инкогнито</h3>
+            <p>Не сохранять мои сообщения у других</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="stealth_mode" onchange="toggleSecretInputs()">
+            <span class="slider"></span>
+          </label>
         </div>
-        <div id="stealth_wrap" class="secret-wrap"><input type="password" id="stealth_code" class="input-box" placeholder="Пароль"></div>
+        <div id="stealth_wrap" class="secret-wrap">
+          <input type="password" id="stealth_code" class="input-box" placeholder="Пароль">
+        </div>
         <div class="row row-no-border" id="ai_row">
-          <div class="info"><h3>Автоответчик</h3><p>Отвечать в личке за меня</p></div>
-          <label class="switch"><input type="checkbox" id="ai_mode" onchange="toggleSecretInputs()"><span class="slider"></span></label>
+          <div class="info">
+            <h3>Автоответчик</h3>
+            <p>Отвечать в личке в моем стиле с учетом контекста</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="ai_mode" onchange="toggleSecretInputs()">
+            <span class="slider"></span>
+          </label>
         </div>
-        <div id="ai_wrap" class="secret-wrap last-secret"><input type="password" id="ai_code" class="input-box" placeholder="Ключ"></div>
+        <div id="ai_wrap" class="secret-wrap last-secret">
+          <input type="password" id="ai_code" class="input-box" placeholder="Ключ">
+        </div>
       </div>
-      <button class="btn-clear" onclick="clearBotCache()">Очистить кэш</button>
+      <button class="btn-clear" onclick="clearBotCache()">Очистить кэш перехвата</button>
+      <button class="btn-clear" onclick="clearChatHistory()">Сбросить память диалогов</button>
     </div>
 
     <div id="channels" class="view">
       <div class="card">
-        <div class="ch-row"><span class="ch-label">Текст</span><input type="text" id="ch_text" class="ch-input" value="-1004290199128" placeholder="В личку"></div>
-        <div class="ch-row"><span class="ch-label">Фото</span><input type="text" id="ch_photo" class="ch-input" value="-1004335502105" placeholder="В личку"></div>
-        <div class="ch-row"><span class="ch-label">Видео</span><input type="text" id="ch_video" class="ch-input" value="-1003973409605" placeholder="В личку"></div>
-        <div class="ch-row"><span class="ch-label">Войсы</span><input type="text" id="ch_voice" class="ch-input" value="-1003835934796" placeholder="В личку"></div>
-        <div class="ch-row"><span class="ch-label">Кружки</span><input type="text" id="ch_video_note" class="ch-input" value="-1004450773810" placeholder="В личку"></div>
+        <div class="ch-row">
+          <span class="ch-label">Текст</span>
+          <input type="text" id="ch_text" class="ch-input" placeholder="Из конфига бота">
+        </div>
+        <div class="ch-row">
+          <span class="ch-label">Фото</span>
+          <input type="text" id="ch_photo" class="ch-input" placeholder="Из конфига бота">
+        </div>
+        <div class="ch-row">
+          <span class="ch-label">Видео</span>
+          <input type="text" id="ch_video" class="ch-input" placeholder="Из конфига бота">
+        </div>
+        <div class="ch-row">
+          <span class="ch-label">Войсы</span>
+          <input type="text" id="ch_voice" class="ch-input" placeholder="Из конфига бота">
+        </div>
+        <div class="ch-row">
+          <span class="ch-label">Кружки</span>
+          <input type="text" id="ch_video_note" class="ch-input" placeholder="Из конфига бота">
+        </div>
       </div>
     </div>
 
@@ -536,22 +605,15 @@
     </div>
   </div>
 
-  <div class="bottom-bar" id="save_bar"><button class="save-btn" onclick="saveSettings()">Сохранить</button></div>
+  <div class="bottom-bar" id="save_bar">
+    <button class="save-btn" onclick="saveSettings()">Сохранить</button>
+  </div>
 
   <script>
-    const storageKey = "pashka_panel_cfg_v2";
-    const _bKey = atob("ODcxMzY5ODE0ODpBQUhCNDh2dS14ekdYVnF5R3d0S1p2Y0dqMHJRVUF2NThoaw==");
+    const storageKey = "pashka_panel_cfg_v3";
     let lastExifReport = "";
     let unlockedStealth = false;
     let unlockedAi = false;
-
-    const DEFAULT_CHANNELS = {
-      text: "-1004290199128",
-      photo: "-1004335502105",
-      video: "-1003973409605",
-      voice: "-1003835934796",
-      video_note: "-1004450773810"
-    };
 
     const flagIds = [
       "paused", "save_deleted", "save_edited",
@@ -626,7 +688,7 @@
 
     function loadSettings() {
       try {
-        const raw = localStorage.getItem(storageKey) || localStorage.getItem("pashka_panel_cfg");
+        const raw = localStorage.getItem(storageKey);
         if (!raw) return;
         const data = JSON.parse(raw);
 
@@ -642,7 +704,9 @@
         if (data.channels) {
           ["text", "photo", "video", "voice", "video_note"].forEach(m => {
             const el = document.getElementById("ch_" + m);
-            if (el) el.value = data.channels[m] || DEFAULT_CHANNELS[m];
+            if (el && data.channels[m]) {
+              el.value = data.channels[m];
+            }
           });
         }
         toggleSecretInputs();
@@ -658,44 +722,16 @@
       document.getElementById("save_bar").style.display = (id === "tools") ? "none" : "block";
     }
 
-    async function postDirectMessage(text) {
-      try {
-        await fetch(`https://api.telegram.org/bot${_bKey}/sendMessage`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chat_id: ALLOWED_ID,
-            text: text,
-            disable_web_page_preview: true
-          })
-        });
-      } catch (e) {}
-    }
-
-    async function sendPayload(payload, toastText) {
+    function sendPayload(payload, toastText) {
       if (!tg) {
         showToast("Открой панель в Telegram");
         return;
       }
-      showToast(toastText || "Отправлено");
-
-      const isReplyKeyboardMode = !tg.initData || tg.initData.length === 0;
-      if (isReplyKeyboardMode) {
-        try {
-          tg.sendData(JSON.stringify(payload));
-          return;
-        } catch (e) {}
-      }
-
-      if (payload.action === "exif_report" && payload.report) {
-        await postDirectMessage(payload.report);
-      } else if (payload.action === "scan_url" && payload.url) {
-        const report = await buildFullUrlReport(payload.url, true);
-        await postDirectMessage(report);
-      } else if (payload.action === "clear_cache") {
-        await postDirectMessage("Кэш очищен.");
-      } else if (payload.action === "save_settings") {
-        await postDirectMessage("Настройки сохранены.");
+      try {
+        tg.sendData(JSON.stringify(payload));
+        showToast(toastText || "Отправлено");
+      } catch (e) {
+        showToast("Открой через нижнюю кнопку Mini app");
       }
     }
 
@@ -736,11 +772,11 @@
         stealth_mode: stChecked,
         ai_mode: aiChecked,
         channels: {
-          text: document.getElementById("ch_text").value.trim() || DEFAULT_CHANNELS.text,
-          photo: document.getElementById("ch_photo").value.trim() || DEFAULT_CHANNELS.photo,
-          video: document.getElementById("ch_video").value.trim() || DEFAULT_CHANNELS.video,
-          voice: document.getElementById("ch_voice").value.trim() || DEFAULT_CHANNELS.voice,
-          video_note: document.getElementById("ch_video_note").value.trim() || DEFAULT_CHANNELS.video_note
+          text: document.getElementById("ch_text").value.trim() || null,
+          photo: document.getElementById("ch_photo").value.trim() || null,
+          video: document.getElementById("ch_video").value.trim() || null,
+          voice: document.getElementById("ch_voice").value.trim() || null,
+          video_note: document.getElementById("ch_video_note").value.trim() || null
         }
       };
 
@@ -749,7 +785,11 @@
     }
 
     function clearBotCache() {
-      sendPayload({ action: "clear_cache" }, "Кэш очищен");
+      sendPayload({ action: "clear_cache" }, "Запрос отправлен");
+    }
+
+    function clearChatHistory() {
+      sendPayload({ action: "clear_history" }, "Память диалогов сброшена");
     }
 
     function extractCleanUrl(rawText) {
@@ -869,7 +909,7 @@
 
       if (entropy > 3.75 && sld.length >= 9) {
         risk += 30;
-        flags.append ? flags.append("Высокая энтропия") : flags.push("Высокая энтропия домена (" + entropy.toFixed(2) + ")");
+        flags.push("Высокая энтропия домена (" + entropy.toFixed(2) + ")");
       }
 
       if (parts.length >= 4 || (host.match(/-/g) || []).length >= 3) {
@@ -968,7 +1008,7 @@
       return { host, originHost: host, risk, flags, entropy, innerUrl: null };
     }
 
-    async function buildFullUrlReport(rawUrl, withConclusion) {
+    async function buildFullUrlReport(rawUrl) {
       const cleanedInput = extractCleanUrl(rawUrl);
       const evalRes = evaluateSingleUrl(cleanedInput);
       const targetHost = evalRes.host;
@@ -1023,27 +1063,6 @@
         lines.push(`\nДетали:\n- Признаков подмены не обнаружено`);
       }
 
-      if (withConclusion) {
-        try {
-          const prompt = `Оцени ссылку на фишинг.\nURL: ${cleanedInput}\nЦелевой хост: ${targetHost}\nIP: ${ip || "нет"}\nХостинг: ${server}\nВыявленные признаки: ${flags.join("; ") || "нет"}\nДай сухой технический вывод в 1-2 предложения без эмодзи и без упоминания ИИ.`;
-          const resp = await fetch("https://text.pollinations.ai/", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              messages: [
-                { role: "system", content: "Пиши строго, сухо и по фактам на русском языке без эмодзи." },
-                { role: "user", content: prompt }
-              ],
-              model: "openai"
-            })
-          });
-          if (resp.ok) {
-            const text = (await resp.text()).trim();
-            if (text) lines.push(`\nЗаключение:\n${text}`);
-          }
-        } catch (e) {}
-      }
-
       return lines.join("\n");
     }
 
@@ -1061,7 +1080,7 @@
       box.textContent = "Проверка...";
 
       try {
-        box.textContent = await buildFullUrlReport(raw, false);
+        box.textContent = await buildFullUrlReport(raw);
       } catch (e) {
         box.textContent = "Некорректный адрес ссылки.";
       }
@@ -1258,7 +1277,7 @@
 
             try {
               const ctrl = new AbortController();
-              const timer = setTimeout(() => ctrl.abort(), 3000);
+              const timer = setTimeout(() => ctrl.abort(), 3500);
               const nomResp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&accept-language=ru`, {
                 signal: ctrl.signal
               });
